@@ -22,7 +22,7 @@ import operator
 import FreeCAD as App
 import FreeCADGui as Gui
 from PySide import QtCore
-from PySide import QtGui
+from PySide import QtWidgets
 
 conectedToolbars = []
 timer = QtCore.QTimer()
@@ -58,7 +58,7 @@ def onRestore(active):
     """Restore current workbench toolbars position."""
 
     toolbars = {}
-    tb = mw.findChildren(QtGui.QToolBar)
+    tb = mw.findChildren(QtWidgets.QToolBar)
     pUser = App.ParamGet("User parameter:Tux/PersistentToolbars/User")
     pSystem = App.ParamGet("User parameter:Tux/PersistentToolbars/System")
 
@@ -144,7 +144,7 @@ def onRestore(active):
 def onSave():
     """Save current workbench toolbars position."""
 
-    tb = mw.findChildren(QtGui.QToolBar)
+    tb = mw.findChildren(QtWidgets.QToolBar)
     active = Gui.activeWorkbench().__class__.__name__
     p = App.ParamGet("User parameter:Tux/PersistentToolbars/User")
     group = p.GetGroup(active)
