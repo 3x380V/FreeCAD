@@ -564,7 +564,7 @@ bool PythonWrapper::toCString(const Py::Object& pyobject, std::string& str)
         Py_DECREF(unicode);
         return true;
     }
-    else if (PyBytes_Check(pyobject.ptr())) {
+    if (PyBytes_Check(pyobject.ptr())) {
         str = PyBytes_AsString(pyobject.ptr());
         return true;
     }
@@ -601,14 +601,10 @@ qsizetype PythonWrapper::toEnum(const Py::Object& pyobject)
     return toEnum(pyobject.ptr());
 #else
     try {
-        qsizetype ret {};
         if (pyobject.hasAttr(std::string("value"))) {
-            ret = Py::Int(pyobject.getAttr(std::string("value")));
+            return Py::Int(pyobject.getAttr(std::string("value")));
         }
-        else {
-            ret = Py::Int(pyobject);
-        }
-        return ret;
+        return Py::Int(pyobject);
     }
     catch (Py::Exception&) {
         Base::PyException e; // extract the Python error text
