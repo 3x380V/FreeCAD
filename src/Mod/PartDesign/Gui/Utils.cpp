@@ -61,10 +61,12 @@ App::DocumentObject* getParent(App::DocumentObject* obj, std::string& subname)
     auto inlist = obj->getInList();
     for (auto it : inlist) {
         if (it->hasExtension(App::GeoFeatureGroupExtension::getExtensionClassTypeId())) {
-            std::string parent;
-            parent += obj->getNameInDocument();
-            parent += '.';
-            subname = parent + subname;
+            const char* name = obj->getNameInDocument();
+            if (!name)
+                break;
+            size_t len = strlen(name);
+            subname.insert(0, name, len + 1);
+            subname[len] = '.';
             return getParent(it, subname);
         }
     }
@@ -87,19 +89,14 @@ bool setEdit(App::DocumentObject *obj, PartDesign::Body *body) {
     auto *activeView = Gui::Application::Instance->activeView();
     if (!activeView)
         return false;
-    App::DocumentObject *parent = nullptr;
     std::string subname;
-    auto activeBody = activeView->getActiveObject<PartDesign::Body*>(PDBODYKEY);
-    if (activeBody != body) {
-        parent = obj;
-    }
-    else {
-        parent = getParent(obj, subname);
+    if (activeView->getActiveObject<PartDesign::Body*>(PDBODYKEY) == body) {
+        obj = getParent(obj, subname);
     }
 
-    Gui::cmdGuiDocument(parent, std::ostringstream() << "setEdit("
-                                                     << Gui::Command::getObjectCmd(parent)
-                                                     << ", 0, '" << subname << "')");
+    Gui::cmdGuiDocument(obj, std::ostringstream() << "setEdit("
+                                                  << Gui::Command::getObjectCmd(obj)
+                                                  << ", 0, '" << subname << "')");
     return true;
 }
 
