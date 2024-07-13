@@ -91,20 +91,31 @@ UnitsSchema::translate(const Quantity& quant, double& factor, std::string& unitS
 std::string
 UnitsSchema::toLocale(const Quantity& quant, const double factor, const std::string& unitString)
 {
-    QLocale Lc;
+    std::stringstream ss;
     const QuantityFormat& format = quant.getFormat();
-    if (format.option != QuantityFormat::None) {
-        Lc.setNumberOptions(static_cast<QLocale::NumberOptions>(format.option));
-    }
 
-    auto valueString =
-        Lc.toString(quant.getValue() / factor, format.toFormat(), format.precision).toStdString();
-
-    auto notUnit = [](auto s) {
-        return s.empty() || s == "°" || s == "″" || s == "′" || s == "\"" || s == "'";
+    auto isUnit = [](auto s) {
+        return !s.empty() && s != "°" && s != "″" && s != "′" && s != "\"" && s != "'";
     };
 
-    return fmt::format("{}{}{}", valueString, notUnit(unitString) ? "" : " ", unitString);
+    switch (format.format) {
+        case QuantityFormat::Fixed:
+            ss << std::fixed;
+            break;
+        case QuantityFormat::Scientific:
+            ss << std::scientific;
+            break;
+        default:
+            break;
+    }
+
+    ss.imbue(std::locale());
+    ss << std::setprecision(format.precision) << quant.getValue() / factor;
+    if (isUnit(unitString)) {
+        ss << ' ' << unitString;
+    }
+
+    return ss.str();
 }
 
 bool UnitsSchema::isMultiUnitLength() const
