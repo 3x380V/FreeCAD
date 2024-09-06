@@ -1621,9 +1621,7 @@ void MainWindow::delayedStartup()
         throw;
     }
 
-    const std::map<std::string,std::string>& cfg = App::Application::Config();
-    auto it = cfg.find("StartHidden");
-    if (it != cfg.end()) {
+    if (hiddenMainWindow()) {
         QApplication::quit();
         return;
     }
@@ -1897,6 +1895,14 @@ void MainWindow::saveWindowSettings(bool canDelay)
     DockWindowManager::instance()->saveState();
     OverlayManager::instance()->save();
     ToolBarManager::getInstance()->saveState();
+}
+
+bool MainWindow::hiddenMainWindow() const
+{
+    const std::map<std::string,std::string>& cfg = App::Application::Config();
+    auto it = cfg.find("StartHidden");
+
+    return it != cfg.end();
 }
 
 void MainWindow::startSplasher()

@@ -211,6 +211,8 @@ public:
 
     bool isRestoringWindowState() const;
 
+    bool hiddenMainWindow() const;
+
 public Q_SLOTS:
     /**
      * Updates the standard actions of a text editor such as Cut, Copy, Paste, Undo and Redo.

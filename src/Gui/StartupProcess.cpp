@@ -413,24 +413,10 @@ void StartupPostProcess::setImportImageFormats()
     App::GetApplication().addImportType(filter.c_str(), "FreeCADGui");
 }
 
-bool StartupPostProcess::hiddenMainWindow() const
-{
-    const std::map<std::string,std::string>& cfg = App::Application::Config();
-    bool hidden = false;
-    auto it = cfg.find("StartHidden");
-    if (it != cfg.end()) {
-        hidden = true;
-    }
-
-    return hidden;
-}
-
 void StartupPostProcess::showMainWindow()
 {
-    bool hidden = hiddenMainWindow();
-
     // show splasher while initializing the GUI
-    if (!hidden && !loadFromPythonModule) {
+    if (!mainWindow->hiddenMainWindow() && !loadFromPythonModule) {
         mainWindow->startSplasher();
     }
 
@@ -493,7 +479,7 @@ void StartupPostProcess::activateWorkbench()
     guiApp.activateWorkbench(start.c_str());
 
     // show the main window
-    if (!hiddenMainWindow()) {
+    if (!mainWindow->hiddenMainWindow()) {
         Base::Console().Log("Init: Showing main window\n");
         mainWindow->loadWindowSettings();
     }
