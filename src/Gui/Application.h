@@ -244,6 +244,8 @@ public:
     /// set the status bits
     void setStatus(Status pos, bool on);
 
+    void destroySplash();
+
     /** @name User edit mode */
     //@{
 protected:

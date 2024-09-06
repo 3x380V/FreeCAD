@@ -313,7 +313,8 @@ AboutDialog::AboutDialog(QWidget* parent)
 
     // Fallback to the splashscreen image
     if (image.isNull()) {
-        image = getMainWindow()->splashImage();
+// FIXME!!!
+//        image = getMainWindow()->splashImage();
     }
 
     // Make sure the image is not too big

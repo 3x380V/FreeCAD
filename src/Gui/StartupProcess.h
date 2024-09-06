@@ -71,7 +71,7 @@ private:
     void setStyleSheet();
     void autoloadModules(const QStringList& wb);
     void setImportImageFormats();
-    void showMainWindow(bool fromPythonModule);
+    void runInitGuiScripts();
     void activateWorkbench();
     void checkParameters();
 
