@@ -54,12 +54,11 @@ class GuiExport StartupPostProcess
 {
 public:
     StartupPostProcess(MainWindow* mw, Application& guiApp, QApplication* app);
-    void setLoadFromPythonModule(bool value);
-    void execute();
+    void execute(bool fromPythonModule);
 
 private:
     void setWindowTitle();
-    void setProcessMessages();
+    void setProcessMessages(bool fromPythonModule);
     void setAutoSaving();
     void setToolBarIconSize();
     void setWheelEventFilter();
@@ -67,17 +66,16 @@ private:
     void setCursorFlashing();
     void setQtStyle();
     void checkOpenGL();
-    void loadOpenInventor();
+    void loadOpenInventor(bool fromPythonModule);
     void setBranding();
     void setStyleSheet();
     void autoloadModules(const QStringList& wb);
     void setImportImageFormats();
-    void showMainWindow();
+    void showMainWindow(bool fromPythonModule);
     void activateWorkbench();
     void checkParameters();
 
 private:
-    bool loadFromPythonModule = false;
     MainWindow* mainWindow;
     Application& guiApp;
     QApplication* qtApp;

@@ -315,8 +315,7 @@ static QWidget* setupMainWindow()
 
         try {
             Gui::StartupPostProcess postProcess(mw, *Gui::Application::Instance, qApp);
-            postProcess.setLoadFromPythonModule(true);
-            postProcess.execute();
+            postProcess.execute(true);
         }
         catch (const Base::Exception&) {
             return nullptr;

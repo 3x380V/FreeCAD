@@ -210,15 +210,10 @@ StartupPostProcess::StartupPostProcess(MainWindow* mw, Application& guiApp, QApp
 {
 }
 
-void StartupPostProcess::setLoadFromPythonModule(bool value)
-{
-    loadFromPythonModule = value;
-}
-
-void StartupPostProcess::execute()
+void StartupPostProcess::execute(bool fromPythonModule)
 {
     setWindowTitle();
-    setProcessMessages();
+    setProcessMessages(fromPythonModule);
     setAutoSaving();
     setToolBarIconSize();
     setWheelEventFilter();
@@ -226,9 +221,9 @@ void StartupPostProcess::execute()
     setCursorFlashing();
     setQtStyle();
     checkOpenGL();
-    loadOpenInventor();
+    loadOpenInventor(fromPythonModule);
     setBranding();
-    showMainWindow();
+    showMainWindow(fromPythonModule);
     activateWorkbench();
     checkParameters();
 }
@@ -239,9 +234,9 @@ void StartupPostProcess::setWindowTitle()
     mainWindow->setWindowTitle(QString());
 }
 
-void StartupPostProcess::setProcessMessages()
+void StartupPostProcess::setProcessMessages(bool fromPythonModule)
 {
-    if (!loadFromPythonModule) {
+    if (fromPythonModule) {
         QObject::connect(qtApp, SIGNAL(messageReceived(const QList<QString> &)),
                          mainWindow, SLOT(processMessages(const QList<QString> &)));
     }
@@ -351,10 +346,10 @@ void StartupPostProcess::checkOpenGL()
     }
 }
 
-void StartupPostProcess::loadOpenInventor()
+void StartupPostProcess::loadOpenInventor(bool fromPythonModule)
 {
     bool loadedInventor = false;
-    if (loadFromPythonModule) {
+    if (fromPythonModule) {
         loadedInventor = SoDB::isInitialized();
     }
 
@@ -413,10 +408,10 @@ void StartupPostProcess::setImportImageFormats()
     App::GetApplication().addImportType(filter.c_str(), "FreeCADGui");
 }
 
-void StartupPostProcess::showMainWindow()
+void StartupPostProcess::showMainWindow(bool fromPythonModule)
 {
     // show splasher while initializing the GUI
-    if (!mainWindow->hiddenMainWindow() && !loadFromPythonModule) {
+    if (!mainWindow->hiddenMainWindow() && !fromPythonModule) {
         mainWindow->startSplasher();
     }
 

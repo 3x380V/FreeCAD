@@ -2248,7 +2248,7 @@ void Application::runApplication()
 #endif
 
     StartupPostProcess postProcess(&mw, app, &mainApp);
-    postProcess.execute();
+    postProcess.execute(false);
 
     Instance->d->startingUp = false;
 
