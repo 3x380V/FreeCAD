@@ -222,6 +222,12 @@ int main(int argc, char** argv)
         // to set window icon on wayland, the desktop file has to be available to the compositor
         QGuiApplication::setDesktopFileName(
             QString::fromStdString(App::Application::Config()["DesktopFileName"]));
+        // In the ideal world, we would show splash just here
+        // It needs QApplication and we are subclasing it as GUIApplication and instance is
+        // created way later. And there are more problems...
+        //        if (runGui()) {
+        //            Gui::Application::showSplash();
+        //        }
 
 #if defined(_MSC_VER)
         // create a dump file when the application crashes

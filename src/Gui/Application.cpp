@@ -90,6 +90,7 @@
 #include "Selection.h"
 #include "SelectionFilterPy.h"
 #include "SoQtOffscreenRendererPy.h"
+#include "SplashScreen.h"
 #include "SplitView3DInventor.h"
 #include "StartupProcess.h"
 #include "TaskView/TaskView.h"
@@ -148,6 +149,7 @@ namespace sp = std::placeholders;
 
 
 Application* Application::Instance = nullptr;
+SplashScreen* Application::_splash = nullptr;
 
 namespace Gui
 {
@@ -2302,6 +2304,9 @@ void Application::runApplication()
         return;
     }
 
+    // In the real world, we show slash here
+    showSplash();
+
     setAppNameAndIcon();
 
     StartupProcess process;
@@ -2351,6 +2356,39 @@ bool Application::hiddenMainWindow()
     auto it = cfg.find("StartHidden");
 
     return it != cfg.end();
+}
+
+void Application::showSplash()
+{
+    if ((App::Application::Config()["Verbose"] == "Strict") || hiddenMainWindow()) {
+        return;
+    }
+
+    ParameterGrp::handle hGrp = App::GetApplication()
+                                    .GetUserParameter()
+                                    .GetGroup("BaseApp")
+                                    ->GetGroup("Preferences")
+                                    ->GetGroup("General");
+
+    if (hGrp->GetBool("ShowSplasher", true)) {
+        _splash = new SplashScreen(Gui::SplashScreen::splashImage());
+        _splash->setShowMessages(hGrp->GetBool("ShowSplasherMessages", false));
+        _splash->show();
+    }
+}
+
+void Application::hideSplash(QWidget *window)
+{
+    if (_splash) {
+        if (window) {
+            _splash->finish(window);
+        }
+        else {
+            _splash->close();
+        }
+        _splash->deleteLater();
+        _splash = nullptr;
+    }
 }
 
 bool Application::testStatus(Status pos) const

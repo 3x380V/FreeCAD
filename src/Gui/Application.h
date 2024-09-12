@@ -48,6 +48,7 @@ class MDIView;
 class MainWindow;
 class MenuItem;
 class PreferencePackManager;
+class SplashScreen;
 class ViewProvider;
 class ViewProviderDocumentObject;
 
@@ -257,6 +258,8 @@ public:
 
     /// whenever GUI is about to start with the main window hidden
     static bool hiddenMainWindow();
+    static void showSplash();
+    static void hideSplash(QWidget *window);
     /// return the status bits
     bool testStatus(Status pos) const;
     /// set the status bits
@@ -306,6 +309,7 @@ private:
     /// workbench python dictionary
     PyObject* _pcWorkbenchDictionary;
     NavlibInterface* pNavlibInterface;
+    static SplashScreen* _splash;
 
     friend class ApplicationPy;
 };
