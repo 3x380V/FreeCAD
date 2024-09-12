@@ -196,6 +196,13 @@ int main(int argc, char** argv)
 #else
         App::Application::initConfig(argc, argv);
 #endif
+// In the ideal world, we would show splash just here
+// It needs QApplication and we are subclasing it as GUIApplication and instance is
+// created way later. And there are more problems...
+//        if (runGui()) {
+//            Gui::Application::showSplash();
+//        }
+
         App::Application::init();
 #if defined(_MSC_VER)
         // create a dump file when the application crashes

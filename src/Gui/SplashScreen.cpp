@@ -180,7 +180,7 @@ static void renderDevBuildWarning(QPainter& painter,
  * Constructs a splash screen that will display the pixmap.
  */
 SplashScreen::SplashScreen(const QPixmap& pixmap, Qt::WindowFlags f)
-    : QSplashScreen(pixmap, f)
+    : QSplashScreen(pixmap, f | Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint)
     , textColor(Qt::black)
 {
     const std::map<std::string, std::string>& cfg = App::Application::Config();
