@@ -95,6 +95,19 @@ private:
     FILE* file;
 };
 
+static bool runGui()
+{
+    // if console option is set then run in cmd mode
+    if (App::Application::Config()["Console"] == "1") {
+        return false;
+    }
+    if (App::Application::Config()["RunMode"] == "Gui"
+        || App::Application::Config()["RunMode"] == "Internal") {
+        return true;
+    }
+    return false;
+}
+
 int main(int argc, char** argv)
 {
 #if defined(FC_OS_LINUX) || defined(FC_OS_BSD)
@@ -281,12 +294,7 @@ int main(int argc, char** argv)
     std::streambuf* oldcerr = std::cerr.rdbuf(&stdcerr);
 
     try {
-        // if console option is set then run in cmd mode
-        if (App::Application::Config()["Console"] == "1") {
-            App::Application::runApplication();
-        }
-        if (App::Application::Config()["RunMode"] == "Gui"
-            || App::Application::Config()["RunMode"] == "Internal") {
+        if (runGui()) {
             Gui::Application::runApplication();
         }
         else {
