@@ -172,7 +172,8 @@ PyMOD_INIT_FUNC(FreeCAD)
 
     try {
         // Inits the Application
-        App::Application::init(argc, argv.data());
+        App::Application::initConfig(argc, argv.data());
+        App::Application::init();
     }
     catch (const Base::Exception& e) {
         std::string appName = App::Application::Config()["ExeName"];

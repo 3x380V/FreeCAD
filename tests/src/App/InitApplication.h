@@ -12,7 +12,8 @@ static void initApplication()
         constexpr int argc = 1;
         std::array<const char*, argc> argv {"FreeCAD"};
         App::Application::Config()["ExeName"] = "FreeCAD";
-        App::Application::init(argc, const_cast<char**>(argv.data()));  // NOLINT
+        App::Application::initConfig(argc, const_cast<char**>(argv.data()));  // NOLINT
+        App::Application::init();
     }
 }
 

@@ -84,7 +84,8 @@ int main(int argc, char** argv)
         App::Application::Config()["LoggingConsole"] = "1";
 
         // Inits the Application
-        App::Application::init(argc, argv);
+        App::Application::initConfig(argc, argv);
+        App::Application::init();
     }
     catch (const Base::UnknownProgramOption& e) {
         std::cerr << e.what();

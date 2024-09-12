@@ -1900,7 +1900,7 @@ void my_se_translator_filter(unsigned int code, EXCEPTION_POINTERS* pExp)
 }
 #endif
 
-void Application::init(int argc, char ** argv)
+void Application::init()
 {
     try {
         // install our own new handler
@@ -1924,8 +1924,6 @@ void Application::init(int argc, char ** argv)
         _set_se_translator(my_se_translator_filter);
 #endif
         initTypes();
-
-        initConfig(argc,argv);
         initApplication();
     }
     catch (...) {

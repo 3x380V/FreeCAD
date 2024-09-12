@@ -387,8 +387,8 @@ public:
 
     /** @name Init, Destruct an Access methods */
     //@{
-    static void init(int argc, char ** argv);
-    static void initTypes();
+    static void initConfig(int argc, char **argv);
+    static void init();
     static void destruct();
     static void destructObserver();
     static void processCmdLineFiles();
@@ -570,8 +570,8 @@ private:
 
     /** @name  Private Init, Destruct an Access methods */
     //@{
-    static void initConfig(int argc, char ** argv);
     static void initApplication();
+    static void initTypes();
     static void logStatus();
     // the one and only pointer to the application object
     static Application *_pcSingleton;

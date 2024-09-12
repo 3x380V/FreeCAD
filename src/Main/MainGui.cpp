@@ -134,21 +134,6 @@ int main(int argc, char** argv)
     // see https://forum.freecad.org/viewtopic.php?p=485142#p485016
     _putenv("COIN_FORCE_FREETYPE_OFF=1");
 
-    int argc_ = argc;
-    QVector<QByteArray> data;
-    QVector<char*> argv_;
-
-    // get the command line arguments as unicode string
-    {
-        QCoreApplication app(argc, argv);
-        QStringList args = app.arguments();
-        for (QStringList::iterator it = args.begin(); it != args.end(); ++it) {
-            data.push_back(it->toUtf8());
-            argv_.push_back(data.back().data());
-        }
-        argv_.push_back(0);  // 0-terminated string
-    }
-
     // https://www.qt.io/blog/dark-mode-on-windows-11-with-qt-6.5
     _putenv("QT_QPA_PLATFORM=windows:darkmode=1");
 #endif
@@ -182,10 +167,23 @@ int main(int argc, char** argv)
 
         // Inits the Application
 #if defined(FC_OS_WIN32)
-        App::Application::init(argc_, argv_.data());
+        {
+            // get the command line arguments as unicode string
+            QVector<QByteArray> data;
+            QVector<char*> argv_;
+            QCoreApplication app(argc, argv);
+            QStringList args = app.arguments();
+            for (QStringList::iterator it = args.begin(); it != args.end(); ++it) {
+                data.push_back(it->toUtf8());
+                argv_.push_back(data.back().data());
+            }
+            argv_.push_back(0);  // 0-terminated string
+            App::Application::initConfig(argc, argv_.data());
+        }
 #else
-        App::Application::init(argc, argv);
+        App::Application::initConfig(argc, argv);
 #endif
+        App::Application::init();
 #if defined(_MSC_VER)
         // create a dump file when the application crashes
         std::string dmpfile = App::Application::getUserAppDataDir();
