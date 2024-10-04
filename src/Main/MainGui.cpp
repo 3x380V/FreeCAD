@@ -50,6 +50,7 @@
 #include <Base/Interpreter.h>
 #include <Base/Parameter.h>
 #include <Base/Exception.h>
+#include <Build/Version.h>
 #include <Gui/Application.h>
 
 
@@ -196,7 +197,9 @@ int main(int argc, char** argv)
     App::Application::Config()["CopyrightInfo"] = sBanner;
     App::Application::Config()["AppIcon"] = "freecad";
     App::Application::Config()["SplashScreen"] = "freecadsplash";
-    App::Application::Config()["AboutImage"] = "freecadabout";
+    const std::string suffix = FCVersionSuffix;
+    App::Application::Config()["AboutImage"] =
+        (suffix == "dev") ? "freecadaboutdev" : "freecadabout";
     App::Application::Config()["StartWorkbench"] = "PartDesignWorkbench";
     // App::Application::Config()["HiddenDockWindow"] = "Property editor";
     App::Application::Config()["SplashAlignment"] = "Bottom|Left";
