@@ -1253,7 +1253,6 @@ void StdCmdPaste::activated(int iMsg)
         QClipboard* cb = QApplication::clipboard();
         const QMimeData* mimeData = cb->mimeData();
         if (mimeData) {
-            WaitCursor wc;
             getMainWindow()->insertFromMimeData(mimeData);
         }
     }
