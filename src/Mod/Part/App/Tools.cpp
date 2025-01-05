@@ -41,6 +41,7 @@
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <GeomLib.hxx>
+#include <GeomLib_IsPlanarSurface.hxx>
 #include <GeomLProp_SLProps.hxx>
 #include <GeomPlate_BuildPlateSurface.hxx>
 #include <GeomPlate_CurveConstraint.hxx>
@@ -816,8 +817,8 @@ bool Part::Tools::isConcave(const TopoDS_Face& face, const gp_Pnt& pointOfVue, c
     bool result = false;
 
     Handle(Geom_Surface) surf = BRep_Tool::Surface(face);
-    GeomAdaptor_Surface adapt(surf);
-    if (adapt.GetType() == GeomAbs_Plane) {
+    GeomLib_IsPlanarSurface check(surf, Precision::Confusion());
+    if (check.IsPlanar()) {
         return false;
     }
 
@@ -830,18 +831,20 @@ bool Part::Tools::isConcave(const TopoDS_Face& face, const gp_Pnt& pointOfVue, c
     BRepIntCurveSurface_Inter mkSection;
     mkSection.Init(face, line, Precision::Confusion());
 
-    result = mkSection.Transition() == IntCurveSurface_In;
+    if (mkSection.More()) {
+        result = mkSection.Transition() == IntCurveSurface_In;
 
-    // compute normals at the intersection
-    gp_Pnt iPnt;
-    gp_Vec dU, dV;
-    surf->D1(mkSection.U(), mkSection.V(), iPnt, dU, dV);
+        // compute normals at the intersection
+        gp_Pnt iPnt;
+        gp_Vec dU, dV;
+        surf->D1(mkSection.U(), mkSection.V(), iPnt, dU, dV);
 
-    // check normals orientation
-    gp_Dir dirdU(dU);
-    result = (dirdU.Angle(direction) - std::numbers::pi / 2) <= Precision::Confusion();
-    gp_Dir dirdV(dV);
-    result = result || ((dirdV.Angle(direction) - std::numbers::pi / 2) <= Precision::Confusion());
+        // check normals orientation
+        gp_Dir dirdU(dU);
+        result = (dirdU.Angle(line.direction) - std::numbers::pi / 2) <= Precision::Confusion();
+        gp_Dir dirdV(dV);
+        result = result || ((dirdV.Angle(line.direction) - std::numbers::pi / 2) <= Precision::Confusion());
+    }
 
     return result;
 }
