@@ -566,6 +566,8 @@ SET(Part_SRCS
     ImportStep.h
     Interface.cpp
     Interface.h
+    PhysicalExtension.cpp
+    PhysicalExtension.h
     PreCompiled.h
     Services.cpp
     Services.h
