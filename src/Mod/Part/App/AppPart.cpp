@@ -130,6 +130,7 @@
 #include "TopoShapeWirePy.h"
 #include "ToroidPy.h"
 #include "OCCError.h"
+#include "PhysicalExtension.h"
 #include "PrismExtension.h"
 #include "PropertyGeometryList.h"
 #include "PropertyTopoShapeList.h"
@@ -438,6 +439,9 @@ PyMOD_INIT_FUNC(Part)
 
     Part::AttachExtension       ::init();
     Part::AttachExtensionPython ::init();
+
+    Part::PhysicalExtension      ::init();
+    Part::PhysicalExtensionPython::init();
     Part::PreviewExtension      ::init();
     Part::PrismExtension        ::init();
 
