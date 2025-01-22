@@ -438,7 +438,7 @@ private:
         Gui::Command::commitCommand();
     }
 
-    void jointOffsetCurves(std::vector<int>& listOfOffsetGeoIds)
+    void jointOffsetCurves(const std::vector<int>& listOfOffsetGeoIds)
     {
         if (listOfOffsetGeoIds.empty()) {
             return;
@@ -563,7 +563,7 @@ private:
         }
     }
 
-    void makeOffsetConstraint(std::vector<int>& listOfOffsetGeoIds)
+    void makeOffsetConstraint(const std::vector<int>& listOfOffsetGeoIds)
     {
         SketchObject* Obj = sketchgui->getSketchObject();
 
@@ -881,7 +881,7 @@ private:
         Gui::Command::doCommand(Gui::Command::Doc, stream.str().c_str());
     }
 
-    std::vector<std::vector<int>> generatevCC(std::vector<int>& listOfGeo)
+    std::vector<std::vector<int>> generatevCC(const std::vector<int>& listOfGeo)
     {
         // This function separates all the selected geometries into separate continuous curves.
         SketchObject* Obj = sketchgui->getSketchObject();
@@ -1120,7 +1120,7 @@ private:
         return ppc.firstPos1 != PointPos::none;
     }
 
-    bool isCurveClosed(std::vector<int>& curve)
+    bool isCurveClosed(const std::vector<int>& curve)
     {
         bool closed = false;
         if (curve.size() > 2) {
