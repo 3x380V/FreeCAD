@@ -22,6 +22,7 @@
 
 
 import FreeCAD, os, sys, unittest, Part, Sketcher
+import tempfile
 from Part import Precision
 
 App = FreeCAD
@@ -558,7 +559,7 @@ class TestSketcherSolver(unittest.TestCase):
             self.Doc.recompute()
 
             # Act: Save and reload the file
-            filename = self.Doc.Name + ".FCStd"
+            filename = tempfile.gettempdir() + os.sep + self.Doc.Name + ".FCStd"
             self.Doc.saveAs(filename)
             FreeCAD.closeDocument(self.Doc.Name)
             self.Doc = FreeCAD.openDocument(filename)
@@ -607,7 +608,7 @@ class TestSketcherSolver(unittest.TestCase):
             self.assertEqual(len(extRefsAll), 3)
             self.assertEqual(root.tag, "all")
             # Act
-            filename = self.Doc.Name + ".FCStd"
+            filename = tempfile.gettempdir() + os.sep + self.Doc.Name + ".FCStd"
             self.Doc.saveAs(filename)
             FreeCAD.closeDocument(self.Doc.Name)
             self.Doc = FreeCAD.openDocument(filename)
