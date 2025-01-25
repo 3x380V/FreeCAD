@@ -434,6 +434,7 @@ private:
             auto* pcFeature = pcDoc->addObject<Points::Feature>(name);
             // copy the data
             pcFeature->Points.setValue(*(pPoints->getPointKernelPtr()));
+            pcFeature->purgeTouched();
             return Py::asObject(pcFeature->getPyObject());
         }
         catch (const Base::Exception& e) {

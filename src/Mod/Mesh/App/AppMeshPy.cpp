@@ -323,6 +323,7 @@ private:
         }
         // copy the data
         pcFeature->Mesh.setValue(*mo);
+        pcFeature->purgeTouched();
         return Py::asObject(pcFeature->getPyObject());
     }
     Py::Object createBox(const Py::Tuple& args)
