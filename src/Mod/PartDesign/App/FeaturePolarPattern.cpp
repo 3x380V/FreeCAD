@@ -133,8 +133,8 @@ const std::list<gp_Trsf> PolarPattern::getTransformations(const std::vector<App:
         App::Line* line = static_cast<App::Line*>(refObject);
         Base::Vector3d base = line->getBasePoint();
         axbase = gp_Pnt(base.x, base.y, base.z);
-        Base::Vector3d d = line->getDirection();
-        axdir = gp_Dir(d.x, d.y, d.z);
+        Base::Vector3d dir = line->getDirection();
+        axdir = gp_Dir(dir.x, dir.y, dir.z);
     } else if (refObject->isDerivedFrom<Part::Feature>()) {
         if (subStrings[0].empty())
             throw Base::ValueError("No axis reference specified");
