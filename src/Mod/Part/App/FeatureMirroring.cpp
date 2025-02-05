@@ -39,6 +39,7 @@
 
 
 #include <Mod/Part/App/PrimitiveFeature.h>
+#include <Mod/Part/App/TopoShapeOpCode.h>
 #include <App/Link.h>
 #include <App/Datums.h>
 
@@ -314,7 +315,18 @@ App::DocumentObjectExecReturn* Mirroring::execute()
         if (shape.isNull()) {
             Standard_Failure::Raise("Cannot mirror empty shape");
         }
-        this->Shape.setValue(TopoShape(0).makeElementMirror(shape, ax2));
+        gp_Trsf mat;
+        mat.SetMirror(ax2);
+
+        // This is needed to respect the placement of the linked shape because it will be
+        // overridden by this object's placement in Feature::onChanged.
+        // Alternatively, this object's placement can be set to the placement of the linked
+        // shape.
+        TopLoc_Location loc = shape.getShape().Location();
+        gp_Trsf placement = loc.Transformation();
+        mat = placement * mat;
+        BRepBuilderAPI_Transform mkTrf(shape.getShape(), mat);
+        this->Shape.setValue(TopoShape(0).makeElementShape(mkTrf, shape, Part::OpCodes::Mirror));
         copyMaterial(link);
 
         return Part::Feature::execute();
