@@ -39,6 +39,7 @@
 
 
 #include <Mod/Part/App/PrimitiveFeature.h>
+#include <Mod/Part/App/TopoShapeOpCode.h>
 #include <App/Link.h>
 #include <App/Datums.h>
 
@@ -309,48 +310,25 @@ App::DocumentObjectExecReturn* Mirroring::execute()
     Base::Vector3d norm = Normal.getValue();
 
     try {
-        // get shape without transform
-        auto shape = Feature::getTopoShape(link, ShapeOption::ResolveLink);
-
-        // manually apply placement via setPlacement() before mirroring
-        if (link->isDerivedFrom(App::GeoFeature::getClassTypeId())) {
-            App::GeoFeature* geo = static_cast<App::GeoFeature*>(link);
-            Base::Placement placement = geo->Placement.getValue();
-
-            if (!placement.isIdentity()) {
-                // Convert Placement to gp_Trsf
-                gp_Trsf trsf;
-                Base::Matrix4D mat = placement.toMatrix();
-                trsf.SetValues(
-                    mat[0][0],
-                    mat[0][1],
-                    mat[0][2],
-                    mat[0][3],
-                    mat[1][0],
-                    mat[1][1],
-                    mat[1][2],
-                    mat[1][3],
-                    mat[2][0],
-                    mat[2][1],
-                    mat[2][2],
-                    mat[2][3]
-                );
-
-                // actually transform the geometry (copy=true to create new shape)
-                BRepBuilderAPI_Transform mkTrf(shape.getShape(), trsf, Standard_True);
-                shape = TopoShape(mkTrf.Shape());
-            }
-        }
-
-        gp_Ax2 ax2(gp_Pnt(base.x, base.y, base.z), gp_Dir(norm.x, norm.y, norm.z));
+        auto shape = Feature::getTopoShape(link, ShapeOption::ResolveLink | ShapeOption::Transform);
 
         if (shape.isNull()) {
             Standard_Failure::Raise("Cannot mirror empty shape");
         }
 
-        auto mirrored = TopoShape(0).makeElementMirror(shape, ax2);
+        gp_Ax2 ax2(gp_Pnt(base.x, base.y, base.z), gp_Dir(norm.x, norm.y, norm.z));
+        gp_Trsf mat;
+        mat.SetMirror(ax2);
 
-        this->Shape.setValue(mirrored);
+        // This is needed to respect the placement of the linked shape because it will be
+        // overridden by this object's placement in Feature::onChanged.
+        // Alternatively, this object's placement can be set to the placement of the linked
+        // shape.
+        TopLoc_Location loc = shape.getShape().Location();
+        gp_Trsf placement = loc.Transformation();
+        mat = placement * mat;
+        BRepBuilderAPI_Transform mkTrf(shape.getShape(), mat);
+        this->Shape.setValue(TopoShape(0).makeElementShape(mkTrf, shape, Part::OpCodes::Mirror));
         copyMaterial(link);
 
         return Part::Feature::execute();
