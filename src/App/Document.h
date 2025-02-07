@@ -195,7 +195,7 @@ public:
     // NOLINTEND
 
 
-    void clearDocument();
+    void clearDocument() const;
 
     /** @name File handling of the document */
     //@{
@@ -345,7 +345,7 @@ public:
     /// Returns true if the DocumentObject is contained in this document
     bool isIn(const DocumentObject* pFeat) const;
     /// Returns a Name of an Object or 0
-    const char *getObjectName(DocumentObject* pFeat) const;
+    const char *getObjectName(const DocumentObject* pFeat) const;
     /// Returns a Name for a new Object or empty if proposedName is null or empty.
     std::string getUniqueObjectName(const char* proposedName) const;
     /// Returns a name different from any of the Labels of any objects in this document, based on the given modelName.
@@ -377,7 +377,7 @@ public:
      */
     //@{
     /// Remove all modifications. After this call The document becomes Valid again.
-    void purgeTouched();
+    void purgeTouched() const;
     /// check if there is any touched object in this document
     bool isTouched() const;
     /// check if there is any object must execute in this document
@@ -385,7 +385,7 @@ public:
     /// returns all touched objects
     std::vector<DocumentObject*> getTouched() const;
     /// set the document to be closable, this is on by default.
-    void setClosable(bool);
+    void setClosable(bool) const;
     /// check whether the document can be closed
     bool isClosable() const;
     /** Recompute touched features and return the number of recalculated features
@@ -404,7 +404,7 @@ public:
     /// return the status bits
     bool testStatus(Status pos) const;
     /// set the status bits
-    void setStatus(Status pos, bool on);
+    void setStatus(Status pos, bool on) const;
     //@}
 
 
@@ -430,7 +430,7 @@ public:
     /// switch the level of Undo/Redo
     int getUndoMode() const;
     /// switch the transaction mode
-    void setTransactionMode(int iMode);
+    void setTransactionMode(int iMode) const;
     /** Open a new command Undo/Redo, an UTF-8 name can be specified
      *
      * @param name: transaction name
@@ -439,13 +439,13 @@ public:
      * to setup a potential transaction which will only be created if there is
      * actual changes.
      */
-    void openTransaction(const char* name = nullptr);
+    void openTransaction(const char* name = nullptr) const;
     /// Rename the current transaction if the id matches
-    void renameTransaction(const char* name, int id);
+    void renameTransaction(const char* name, int id) const;
     /// Commit the Command transaction. Do nothing If there is no Command transaction open.
-    void commitTransaction();
+    void commitTransaction() const;
     /// Abort the actually running transaction.
-    void abortTransaction();
+    void abortTransaction() const;
     /// Check if a transaction is open
     bool hasPendingTransaction() const;
     /// Return the undo/redo transaction ID starting from the back
@@ -454,11 +454,11 @@ public:
     /// If no transaction is open true is returned.
     bool isTransactionEmpty() const;
     /// Set the Undo limit in Byte!
-    void setUndoLimit(unsigned int UndoMemSize = 0);
+    void setUndoLimit(unsigned int UndoMemSize = 0) const;
     /// Returns the actual memory consumption of the Undo redo stuff.
     unsigned int getUndoMemSize() const;
     /// Set the Undo limit as stack size
-    void setMaxUndoStackSize(unsigned int UndoMaxStackSize = 20);  // NOLINT
+    void setMaxUndoStackSize(unsigned int UndoMaxStackSize = 20) const;  // NOLINT
     /// Set the Undo limit as stack size
     unsigned int getMaxUndoStackSize() const;
     /// Remove all stored Undos and Redos
@@ -479,7 +479,7 @@ public:
     /// redo/undo or rollback
     bool isPerformingTransaction() const;
     /// \internal add or remove property from a transactional object
-    void addOrRemovePropertyOfObject(TransactionalObject*, Property* prop, bool add);
+    void addOrRemovePropertyOfObject(TransactionalObject*, const Property* prop, bool add);
     //@}
 
     /** @name dependency stuff */
@@ -487,7 +487,7 @@ public:
     /// write GraphViz file
     void writeDependencyGraphViz(std::ostream& out);
     /// checks if the graph is directed and has no cycles
-    bool checkOnCycle();
+    static bool checkOnCycle();
     /// get a list of all objects linking to the given object
     std::vector<DocumentObject*> getInList(const DocumentObject* me) const;
 
@@ -576,7 +576,7 @@ public:
     bool hasLinksTo(const DocumentObject* obj) const;
 
     /// Called by objects during restore to ask for recompute
-    void addRecomputeObject(DocumentObject* obj);
+    void addRecomputeObject(DocumentObject* obj) const;
 
     const std::string& getOldLabel() const
     {
@@ -589,7 +589,7 @@ public:
         const std::function<bool(const DocumentObject*)>& selector =
             [](const DocumentObject*) {
                 return true;
-            });
+            }) const;
 
     PyObject* getPyObject() override;
 
@@ -621,7 +621,7 @@ protected:
     void _addObject(DocumentObject* pcObject, const char* pObjectName);
     /// checks if a valid transaction is open
     void _checkTransaction(DocumentObject* pcDelObj, const Property* What, int line);
-    void breakDependency(DocumentObject* pcObject, bool clear);
+    void breakDependency(DocumentObject* pcObject, bool clear) const;
     std::vector<DocumentObject*> readObjects(Base::XMLReader& reader);
     void writeObjects(const std::vector<DocumentObject*>&, Base::Writer& writer) const;
     bool saveToFile(const char* filename) const;
@@ -635,7 +635,7 @@ protected:
     void onChangedProperty(const DocumentObject* Who, const Property* What);
     /// helper which Recompute only this feature
     /// @return 0 if succeeded, 1 if failed, -1 if aborted by user.
-    int _recomputeFeature(DocumentObject* Feat);
+    int _recomputeFeature(DocumentObject* Feat) const;
     void _clearRedos();
 
     /// refresh the internal dependency graph
@@ -679,7 +679,7 @@ template<typename T>
 std::vector<T*> Document::getObjectsOfType() const
 {
     std::vector<T*> type;
-    std::vector<DocumentObject*> obj = this->getObjectsOfType(T::getClassTypeId());
+    const std::vector<DocumentObject*> obj = this->getObjectsOfType(T::getClassTypeId());
     type.reserve(obj.size());
     for (auto it : obj) {
         type.push_back(static_cast<T*>(it));
