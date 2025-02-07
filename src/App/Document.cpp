@@ -1063,7 +1063,7 @@ void Document::Restore(Base::XMLReader& reader)
 
     reader.readElement("Document");
     long scheme = reader.getAttributeAsInteger("SchemaVersion");
-    reader.DocumentSchema = scheme;
+    reader.DocumentSchema = static_cast<int>(scheme);
     if (reader.hasAttribute("ProgramVersion")) {
         reader.ProgramVersion = reader.getAttribute("ProgramVersion");
     }
@@ -1071,7 +1071,7 @@ void Document::Restore(Base::XMLReader& reader)
         reader.ProgramVersion = "pre-0.14";
     }
     if (reader.hasAttribute("FileVersion")) {
-        reader.FileVersion = reader.getAttributeAsUnsigned("FileVersion");
+        reader.FileVersion = static_cast<int>(reader.getAttributeAsUnsigned("FileVersion"));
     }
     else {
         reader.FileVersion = 0;
@@ -1107,7 +1107,7 @@ void Document::Restore(Base::XMLReader& reader)
     if (scheme == 2) {
         // read the feature types
         reader.readElement("Features");
-        int Cnt = reader.getAttributeAsInteger("Count");
+        int Cnt = static_cast<int>(reader.getAttributeAsInteger("Count"));
         for (i = 0; i < Cnt; i++) {
             reader.readElement("Feature");
             string type = reader.getAttribute("type");
@@ -1123,7 +1123,7 @@ void Document::Restore(Base::XMLReader& reader)
 
         // read the features itself
         reader.readElement("FeatureData");
-        Cnt = reader.getAttributeAsInteger("Count");
+        Cnt = static_cast<int>(reader.getAttributeAsInteger("Count"));
         for (i = 0; i < Cnt; i++) {
             reader.readElement("Feature");
             string name = reader.getAttribute("name");
@@ -1429,7 +1429,7 @@ std::vector<App::DocumentObject*> Document::readObjects(Base::XMLReader& reader)
 
     // read the object types
     reader.readElement("Objects");
-    int Cnt = reader.getAttributeAsInteger("Count");
+    int Cnt = static_cast<int>(reader.getAttributeAsInteger("Count"));
 
     if (!reader.hasAttribute(FC_ATTR_DEPENDENCIES)) {
         d->partialLoadObjects.clear();
@@ -1438,13 +1438,14 @@ std::vector<App::DocumentObject*> Document::readObjects(Base::XMLReader& reader)
         std::unordered_map<std::string, DepInfo> deps;
         for (int i = 0; i < Cnt; i++) {
             reader.readElement(FC_ELEMENT_OBJECT_DEPS);
-            int dcount = reader.getAttributeAsInteger(FC_ATTR_DEP_COUNT);
+            int dcount = static_cast<int>(reader.getAttributeAsInteger(FC_ATTR_DEP_COUNT));
             if (dcount == 0) {
                 continue;
             }
             auto& info = deps[reader.getAttribute(FC_ATTR_DEP_OBJ_NAME)];
             if (reader.hasAttribute(FC_ATTR_DEP_ALLOW_PARTIAL)) {
-                info.canLoadPartial = reader.getAttributeAsInteger(FC_ATTR_DEP_ALLOW_PARTIAL);
+                info.canLoadPartial =
+                    static_cast<int>(reader.getAttributeAsInteger(FC_ATTR_DEP_ALLOW_PARTIAL));
             }
             for (int j = 0; j < dcount; ++j) {
                 reader.readElement(FC_ELEMENT_OBJECT_DEP);
@@ -1565,7 +1566,7 @@ std::vector<App::DocumentObject*> Document::readObjects(Base::XMLReader& reader)
     // read the features itself
     reader.clearPartialRestoreDocumentObject();
     reader.readElement("ObjectData");
-    Cnt = reader.getAttributeAsInteger("Count");
+    Cnt = static_cast<int>(reader.getAttributeAsInteger("Count"));
     for (int i = 0; i < Cnt; i++) {
         reader.readElement("Object");
         std::string name = reader.getName(reader.getAttribute("name"));
@@ -1630,7 +1631,7 @@ std::vector<App::DocumentObject*> Document::importObjects(Base::XMLReader& reade
     ExpressionParser::ExpressionImporter expImporter(reader);
     reader.readElement("Document");
     long scheme = reader.getAttributeAsInteger("SchemaVersion");
-    reader.DocumentSchema = scheme;
+    reader.DocumentSchema = static_cast<int>(scheme);
     if (reader.hasAttribute("ProgramVersion")) {
         reader.ProgramVersion = reader.getAttribute("ProgramVersion");
     }
@@ -1638,7 +1639,7 @@ std::vector<App::DocumentObject*> Document::importObjects(Base::XMLReader& reade
         reader.ProgramVersion = "pre-0.14";
     }
     if (reader.hasAttribute("FileVersion")) {
-        reader.FileVersion = reader.getAttributeAsUnsigned("FileVersion");
+        reader.FileVersion = static_cast<int>(reader.getAttributeAsUnsigned("FileVersion"));
     }
     else {
         reader.FileVersion = 0;
@@ -1855,7 +1856,8 @@ private:
                             if (nPos == std::string::npos) {
                                 // store all backup files
                                 backup.push_back(it);
-                                nSuff = std::max<int>(nSuff, std::atol(suf.c_str()));
+                                nSuff =
+                                    std::max<int>(nSuff, static_cast<int>(std::atol(suf.c_str())));
                             }
                         }
                     }
@@ -2113,7 +2115,7 @@ bool Document::saveToFile(const char* filename) const
 
     auto hGrp = App::GetApplication().GetParameterGroupByPath(
         "User parameter:BaseApp/Preferences/Document");
-    int compression = hGrp->GetInt("CompressionLevel", 7);
+    int compression = static_cast<int>(hGrp->GetInt("CompressionLevel", 7));
     compression = Base::clamp<int>(compression, Z_NO_COMPRESSION, Z_BEST_COMPRESSION);
 
     bool policy = App::GetApplication()
@@ -2206,9 +2208,9 @@ bool Document::saveToFile(const char* filename) const
 
     if (policy) {
         // if saving the project data succeeded rename to the actual file name
-        int count_bak = App::GetApplication()
+        int count_bak = static_cast<int>(App::GetApplication()
                             .GetParameterGroupByPath("User parameter:BaseApp/Preferences/Document")
-                            ->GetInt("CountBackupFiles", 1);
+                            ->GetInt("CountBackupFiles", 1));
         bool backup = App::GetApplication()
                           .GetParameterGroupByPath("User parameter:BaseApp/Preferences/Document")
                           ->GetBool("CreateBackupFiles", true);
@@ -4062,7 +4064,7 @@ DocumentObject* Document::moveObject(DocumentObject* obj, bool recursive)
     std::vector<int> ids;
     ids.reserve(deps.size());
     for (auto o : deps) {
-        ids.push_back(o->getID());
+        ids.push_back(static_cast<int>(o->getID()));
     }
 
     // We only remove object if it is the moving object or it has no
