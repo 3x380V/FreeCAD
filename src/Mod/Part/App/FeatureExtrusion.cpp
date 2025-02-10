@@ -47,6 +47,7 @@
 #include "FeatureExtrusion.h"
 #include "ExtrusionHelper.h"
 #include "Part2DObject.h"
+#include "Tools.h"
 
 
 using namespace Part;
@@ -293,8 +294,15 @@ Base::Vector3d Extrusion::calculateShapeNormal(const App::PropertyLink& shapeLin
         throw Base::ValueError("calculateShapeNormal: link is empty");
     }
 
-    // special case for sketches and the like: no matter what shape they have, use their local Z axis.
+    const bool onlyPlane = true;
     if (docobj->isDerivedFrom<Part::Part2DObject>()) {
+        BRepLib_FindSurface planeFinder(sh, -1.0, onlyPlane);
+        if (planeFinder.Found()) {
+            GeomAdaptor_Surface surf(planeFinder.Surface());
+            gp_Dir normal = surf.Plane().Axis().Direction();
+            return Base::convertTo<Base::Vector3d>(normal);
+        }
+
         Base::Vector3d OZ(0.0, 0.0, 1.0);
         Base::Vector3d result;
         Base::Rotation(mat).multVec(OZ, result);
@@ -308,7 +316,7 @@ Base::Vector3d Extrusion::calculateShapeNormal(const App::PropertyLink& shapeLin
     }
 
     // find plane
-    BRepLib_FindSurface planeFinder(sh, -1, /*OnlyPlane=*/true);
+    BRepLib_FindSurface planeFinder(sh, -1.0, onlyPlane);
     if (!planeFinder.Found()) {
         throw Base::ValueError("Can't find normal direction, because the shape is not on a plane.");
     }
