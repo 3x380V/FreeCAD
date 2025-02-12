@@ -324,6 +324,7 @@ void Application::setupPythonTypes()
 
 
     // Python types
+    Base::InterpreterSingleton::addType(&Base::PyObjectBase      ::Type,pBaseModule,"Object");
     Base::InterpreterSingleton::addType(&Base::VectorPy          ::Type,pBaseModule,"Vector");
     Base::InterpreterSingleton::addType(&Base::MatrixPy          ::Type,pBaseModule,"Matrix");
     Base::InterpreterSingleton::addType(&Base::BoundBoxPy        ::Type,pBaseModule,"BoundBox");
