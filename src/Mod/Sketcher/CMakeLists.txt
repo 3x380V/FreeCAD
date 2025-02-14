@@ -20,6 +20,7 @@ set(Sketcher_TestScripts
     SketcherTests/TestSketchValidateCoincidents.py
     SketcherTests/TestSketchCarbonCopyReverseMapping.py
     SketcherTests/TestSketchCarbonCopyReverseMapping.FCStd
+    SketcherTests/TestSketchMoveConstraint.py
 )
 
 if(BUILD_GUI)
