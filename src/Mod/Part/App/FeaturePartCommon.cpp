@@ -130,33 +130,14 @@ App::DocumentObjectExecReturn* MultiCommon::execute()
         shapes.push_back(sh);
     }
 
-    TopoShape res;
-
-    if (Behavior.getValue() == CommonOfAllShapes) {
-        // special case - if there is only one argument, and it is compound - expand it
-        if (shapes.size() == 1) {
-            TopoShape shape = shapes.front();
-
-            if (shape.shapeType() == TopAbs_COMPOUND) {
-                shapes.clear();
-                std::ranges::copy(shape.getSubTopoShapes(), std::back_inserter(shapes));
-            }
+    TopoShape res {0};
+    for (std::size_t index = 1; index < shapes.size(); index++) {
+        std::vector<TopoShape> two_shapes {shapes[0], shapes[index]};
+        res.makeElementBoolean(Part::OpCodes::Common, two_shapes);
+        if (res.isNull()) {
+            throw Base::RuntimeError("Resulting shape is null");
         }
-
-        res = shapes.front();
-
-        // to achieve common of all shapes, we need to do it one shape at a time
-        for (const auto& tool : shapes) {
-            res = res.makeElementBoolean(OpCodes::Common, {res, tool});
-        }
-    }
-    else {
-        res = TopoShape(0);
-        res.makeElementBoolean(OpCodes::Common, shapes);
-    }
-
-    if (res.isNull()) {
-        throw Base::RuntimeError("Resulting shape is null");
+        shapes[0] = res;
     }
 
     throwIfInvalidIfCheckModel(res.getShape());
