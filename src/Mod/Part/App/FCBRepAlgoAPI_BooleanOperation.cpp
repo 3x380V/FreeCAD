@@ -81,8 +81,12 @@ void FCBRepAlgoAPIHelper::setAutoFuzzy(BRepAlgoAPI_BuilderAlgo* op) {
     op->SetFuzzyValue(Part::FuzzyHelper::getBooleanFuzzy() * sqrt(bounds.SquareExtent()) * Precision::Confusion());
 }
 
-void FCBRepAlgoAPI_BooleanOperation::Build() {
-
+#if OCC_VERSION_HEX >= 0x070600
+void FCBRepAlgoAPI_BooleanOperation::Build(const Message_ProgressRange& theRange)
+#else
+void FCBRepAlgoAPI_BooleanOperation::Build()
+#endif
+{
     if (myOperation == BOPAlgo_CUT && myArguments.Size() == 1 && myTools.Size() == 1 && myTools.First().ShapeType() == TopAbs_COMPOUND) {
         // cut argument and compound tool
         TopTools_ListOfShape myOriginalArguments = myArguments;
@@ -90,15 +94,17 @@ void FCBRepAlgoAPI_BooleanOperation::Build() {
         RecursiveCutFusedTools(myOriginalArguments, myOriginalTools.First());
         myArguments = myOriginalArguments;
         myTools = myOriginalTools;
-        
     } else if (myOperation==BOPAlgo_CUT && myArguments.Size()==1 && myArguments.First().ShapeType() == TopAbs_COMPOUND) {
         // cut compound argument
         TopTools_ListOfShape myOriginalArguments = myArguments;
         RecursiveCutCompound(myOriginalArguments.First());
         myArguments = myOriginalArguments;
-        
     } else {
+#if OCC_VERSION_HEX >= 0x070600
+        BRepAlgoAPI_BooleanOperation::Build(theRange);
+#else
         BRepAlgoAPI_BooleanOperation::Build();
+#endif
     }
 }
 
