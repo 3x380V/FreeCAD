@@ -69,6 +69,9 @@
 
 using namespace PartGui;
 
+namespace
+{
+
 QVector<QString> buildShapeEnumVector()
 {
    QVector<QString>names;
@@ -177,6 +180,8 @@ QString getBOPCheckString(const BOPAlgo_CheckStatus &status)
   if (index < 0 || index > strings.size())
     index = 0;
   return strings.at(index);
+}
+
 }
 
 ResultEntry::ResultEntry()
@@ -347,8 +352,7 @@ QVariant ResultModel::headerData(int section, Qt::Orientation orientation, int r
 void ResultModel::setResults(ResultEntry *resultsIn)
 {
     this->beginResetModel();
-    if (root)
-        delete root;
+    delete root;
     root = resultsIn;
     this->endResetModel();
 }
@@ -437,7 +441,7 @@ void TaskCheckGeometryResults::goCheck()
         baseStream << "." << sel.FeatName;
         std::string label = sel.pObject->Label.getValue();
         if (sel.FeatName != label) {
-            baseStream << " (" << label.c_str() << ")";
+            baseStream << " (" << QString::fromStdString(label) << ")";
         }
 
         TopoDS_Shape shape = Part::Feature::getShape(
