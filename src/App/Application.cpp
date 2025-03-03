@@ -960,7 +960,7 @@ Document* Application::openDocumentPrivate(const char * FileName,
                         // add it to _pendingDocsReopen to delay reloading.
                         for(auto obj2 : doc->getObjects())
                             objNames.emplace_back(obj2->getNameInDocument());
-                        _pendingDocMap[doc->FileName.getValue()] = std::move(objNames);
+                        _pendingDocMap[doc->FileName.getValue()] = objNames;
                         break;
                     }
                 }
@@ -1174,8 +1174,8 @@ std::string Application::getUserMacroDir()
 std::string Application::getResourceDir()
 {
 #ifdef RESOURCEDIR
-    // #6892: Conda may inject null characters => remove them using c_str()
-    std::string path = std::string(RESOURCEDIR).c_str();
+    // #6892: Conda may inject null characters => remove them
+    std::string path = std::string(RESOURCEDIR);
     path += PATHSEP;
     const QDir dir(QString::fromStdString(path));
     if (dir.isAbsolute())
@@ -1189,8 +1189,8 @@ std::string Application::getResourceDir()
 std::string Application::getLibraryDir()
 {
 #ifdef LIBRARYDIR
-    // #6892: Conda may inject null characters => remove them using c_str()
-    std::string path = std::string(LIBRARYDIR).c_str();
+    // #6892: Conda may inject null characters => remove them
+    std::string path = std::string(LIBRARYDIR);
     const QDir dir(QString::fromStdString(path));
     if (dir.isAbsolute())
         return path;
@@ -1203,8 +1203,8 @@ std::string Application::getLibraryDir()
 std::string Application::getHelpDir()
 {
 #ifdef DOCDIR
-    // #6892: Conda may inject null characters => remove them using c_str()
-    std::string path = std::string(DOCDIR).c_str();
+    // #6892: Conda may inject null characters => remove them
+    std::string path = std::string(DOCDIR);
     path += PATHSEP;
     const QDir dir(QString::fromStdString(path));
     if (dir.isAbsolute())
@@ -2188,6 +2188,7 @@ void Application::initTypes()
             (DocumentObject::getClassTypeId());
 
     // register exception producer types
+    // NOLINTBEGIN
     new Base::ExceptionProducer<Base::AbortException>;
     new Base::ExceptionProducer<Base::XMLBaseException>;
     new Base::ExceptionProducer<Base::XMLParseException>;
@@ -2220,6 +2221,7 @@ void Application::initTypes()
     new Base::ExceptionProducer<Base::CADKernelError>;
     new Base::ExceptionProducer<Base::RestoreError>;
     new Base::ExceptionProducer<Base::PropertyError>;
+    // NOLINTEND
 
     Base::registerServiceImplementation<CenterOfMassProvider>(new NullCenterOfMass);
 }
@@ -3455,9 +3457,9 @@ std::string Application::FindHomePath(const char* sCall)
     }
 
     // should be an absolute path now
-    std::string::size_type pos = absPath.find_last_of("/");
+    std::string::size_type pos = absPath.find_last_of('/');
     homePath.assign(absPath,0,pos);
-    pos = homePath.find_last_of("/");
+    pos = homePath.find_last_of('/');
     homePath.assign(homePath,0,pos+1);
 
     return homePath;
