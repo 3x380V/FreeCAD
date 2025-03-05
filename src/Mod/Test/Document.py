@@ -677,6 +677,13 @@ class DocumentBasicCases(unittest.TestCase):
         self.Doc = FreeCAD.open(SaveName)
         self.assertEqual(self.Doc.ActiveObject.Label, "abc_ef")
 
+    def testAddRemoveIssue19980(self):
+        doc = self.Doc
+        doc.UndoMode = 1
+        doc.openTransaction("Add/Remove")
+        doc.addObject("App::FeatureTest", "Test")
+        doc.removeObject("Test")
+
     def tearDown(self):
         # closing doc
         FreeCAD.closeDocument("CreateTest")
