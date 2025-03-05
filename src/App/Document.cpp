@@ -3690,6 +3690,8 @@ void Document::removeObject(const char* sName)
     pos->second->setStatus(ObjectStatus::Remove, false);
     unregisterLabel(pos->second->Label.getStrValue());
 
+    std::string objLabel = pos->second->Label.getStrValue();
+
     // do no transactions if we do a rollback!
     std::unique_ptr<DocumentObject> tobedestroyed;
     if (!d->rollback) {
@@ -3706,6 +3708,7 @@ void Document::removeObject(const char* sName)
         }
     }
 
+    unregisterLabel(objLabel);
     for (auto obj = d->objectArray.begin();
          obj != d->objectArray.end();
          ++obj) {
