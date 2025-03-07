@@ -1327,6 +1327,8 @@ void Vertex::Save(Base::Writer &writer) const
     writer.Stream() << writer.ind() << "<Cosmetic value=\"" <<  c2 << "\"/>" << '\n';
     writer.Stream() << writer.ind() << "<CosmeticLink value=\"" <<  cosmeticLink << "\"/>" << '\n';
     writer.Stream() << writer.ind() << "<CosmeticTag value=\"" <<  cosmeticTag << "\"/>" << '\n';
+
+    Tag::Save(writer, "VertexTag");
 }
 
 void Vertex::Restore(Base::XMLReader &reader)
