@@ -702,6 +702,7 @@ void PropertyLink::resetLink()
             }
         }
     }
+
     _pcLink = nullptr;
 }
 
@@ -892,8 +893,7 @@ PropertyLinkList::PropertyLinkList() = default;
 
 PropertyLinkList::~PropertyLinkList()
 {
-    // in case this property gety dynamically removed
-
+    // in case this property gets dynamically removed
     // maintain the back link in the DocumentObject class
     if (_pcScope != LinkScope::Hidden && !_lValueList.empty() && getContainer()
         && getContainer()->isDerivedFrom<App::DocumentObject>()) {
