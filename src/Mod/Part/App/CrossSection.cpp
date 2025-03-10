@@ -24,9 +24,9 @@
 
 #include <algorithm>
 #include <BRepAdaptor_Surface.hxx>
-#include <Mod/Part/App/FCBRepAlgoAPI_Common.h>
-#include <Mod/Part/App/FCBRepAlgoAPI_Cut.h>
-#include <Mod/Part/App/FCBRepAlgoAPI_Section.h>
+#include <BRepAlgoAPI_Common.hxx>
+#include <BRepAlgoAPI_Cut.hxx>
+#include <BRepAlgoAPI_Section.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepPrimAPI_MakeHalfSpace.hxx>
@@ -41,7 +41,6 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Wire.hxx>
-
 
 #include "CrossSection.h"
 #include "TopoShapeOpCode.h"
@@ -117,7 +116,7 @@ std::list<TopoDS_Wire> CrossSection::removeDuplicates(const std::list<TopoDS_Wir
 
 void CrossSection::sliceNonSolid(double d, const TopoDS_Shape& shape, std::list<TopoDS_Wire>& wires) const
 {
-    FCBRepAlgoAPI_Section cs(shape, gp_Pln(a, b, c, -d));
+    BRepAlgoAPI_Section cs(shape, gp_Pln(a, b, c, -d));
     if (cs.IsDone()) {
         std::list<TopoDS_Edge> edges;
         TopExp_Explorer xp;
@@ -143,7 +142,7 @@ void CrossSection::sliceSolid(double d, const TopoDS_Shape& shape, std::list<Top
 
     BRepPrimAPI_MakeHalfSpace mkSolid(face, refPoint);
     TopoDS_Solid solid = mkSolid.Solid();
-    FCBRepAlgoAPI_Cut mkCut(shape, solid);
+    BRepAlgoAPI_Cut mkCut(shape, solid);
 
     if (mkCut.IsDone()) {
         TopTools_IndexedMapOfShape mapOfFaces;
@@ -277,7 +276,7 @@ void TopoCrossSection::sliceNonSolid(
     std::vector<TopoShape>& wires
 ) const
 {
-    FCBRepAlgoAPI_Section cs(shape.getShape(), gp_Pln(a, b, c, -d));
+    BRepAlgoAPI_Section cs(shape.getShape(), gp_Pln(a, b, c, -d));
     if (cs.IsDone()) {
         std::string prefix(op);
         prefix += Data::indexSuffix(idx);
@@ -313,7 +312,7 @@ void TopoCrossSection::sliceSolid(
     std::string prefix(op);
     prefix += Data::indexSuffix(idx);
     solid.makeElementShape(mkSolid, face, prefix.c_str());
-    FCBRepAlgoAPI_Cut mkCut(shape.getShape(), solid.getShape());
+    BRepAlgoAPI_Cut mkCut(shape.getShape(), solid.getShape());
 
     if (mkCut.IsDone()) {
         TopoShape res(shape.Tag, shape.Hasher);
