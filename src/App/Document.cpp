@@ -1292,6 +1292,9 @@ void Document::writeObjects(const std::vector<DocumentObject*>& obj,
                 writer.Stream() << "Error=\"" << Property::encodeAttribute(desc) << "\" ";
             }
         }
+        if ((*it)->isFreezed()) {
+            writer.Stream() << "Freeze=\"1\" ";
+        }
         writer.Stream() << "/>" << '\n';
     }
 
@@ -1487,6 +1490,11 @@ std::vector<DocumentObject*> Document::readObjects(Base::XMLReader& reader)
                                    reader.getAttribute<bool>("Invalid"));
                     if (obj->isError() && reader.hasAttribute("Error")) {
                         d->addRecomputeLog(reader.getAttribute<const char*>("Error"), obj);
+                    }
+                }
+                if (reader.hasAttribute("Freeze")) {
+                    if (reader.getAttribute<long>("Freeze") != 0) {
+                        obj->freeze();
                     }
                 }
             }
