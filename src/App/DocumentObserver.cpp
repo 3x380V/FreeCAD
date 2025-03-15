@@ -215,8 +215,7 @@ std::string DocumentObjectT::getDocumentPython() const
 DocumentObject* DocumentObjectT::getObject() const
 {
     DocumentObject* obj = nullptr;
-    Document* doc = getDocument();
-    if (doc) {
+    if (Document* doc = getDocument()) {
         obj = doc->getObject(object.c_str());
     }
     return obj;
@@ -225,6 +224,20 @@ DocumentObject* DocumentObjectT::getObject() const
 const std::string& DocumentObjectT::getObjectName() const
 {
     return object;
+}
+
+const char* DocumentObjectT::getNameInDocument() const
+{
+    return object.c_str();
+}
+
+bool DocumentObjectT::isAttachedToDocument() const
+{
+    if (auto obj = getObject()) {
+        return obj->isAttachedToDocument();
+    }
+
+    return false;
 }
 
 const std::string& DocumentObjectT::getObjectLabel() const
@@ -256,9 +269,13 @@ std::string DocumentObjectT::getPropertyPython() const
 
 Property* DocumentObjectT::getProperty() const
 {
-    auto obj = getObject();
-    if (obj) {
-        return obj->getPropertyByName(property.c_str());
+    return getPropertyByName(property.c_str());
+}
+
+Property* DocumentObjectT::getPropertyByName(const char* name) const
+{
+    if (auto obj = getObject()) {
+        return obj->getPropertyByName(name);
     }
     return nullptr;
 }
