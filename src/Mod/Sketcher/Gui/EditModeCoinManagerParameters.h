@@ -491,7 +491,7 @@ struct CoinMapping
         PointIdToPosId.clear();
         GeoElementId2SetId.clear();
         PointIdToVertexId.clear();
-    };
+    }
 
     /// given the MF index of a curve and the coin layer in which it is drawn returns the GeoId of
     /// the curve
@@ -505,6 +505,12 @@ struct CoinMapping
     {
         return PointIdToGeoId[layerindex][pointindex];
     }
+
+    int getNumPoints() const
+    {
+        return static_cast<int>(PointIdToGeoId.size());
+    }
+
     /// given the MF index of a point and the coin layer in which it is drawn returns the PosId of
     /// the point
     Sketcher::PointPos getPointPosId(int pointindex, int layerindex)
