@@ -138,11 +138,17 @@ bool TaskDlgEditSketch::reject()
         sketchView->purgeHandler();
     }
 
-    std::string document = getDocumentName();  // needed because resetEdit() deletes this instance
-    Gui::Command::doCommand(Gui::Command::Gui, "Gui.getDocument('%s').resetEdit()", document.c_str());
-    Gui::Command::doCommand(Gui::Command::Doc, "App.getDocument('%s').recompute()", document.c_str());
+    try {
+        std::string document = getDocumentName();  // needed because resetEdit() deletes this instance
+        Gui::Command::doCommand(Gui::Command::Gui, "Gui.getDocument('%s').resetEdit()", document.c_str());
+        Gui::Command::doCommand(Gui::Command::Doc, "App.getDocument('%s').recompute()", document.c_str());
 
-    return true;
+        return true;
+    }
+    catch (const Base::Exception& e) {
+        e.reportException();
+        return false;
+    }
 }
 
 QDialogButtonBox::StandardButtons TaskDlgEditSketch::getStandardButtons() const

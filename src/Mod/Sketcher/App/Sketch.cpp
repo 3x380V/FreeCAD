@@ -1909,7 +1909,7 @@ int Sketch::checkGeoId(int geoId) const
     }
     if (!(geoId >= 0 && geoId < int(Geoms.size()))) {
         Base::Console().warning("geoId %d  Geoms.size %d\n", geoId, int(Geoms.size()));
-        throw Base::IndexError("Sketch::checkGeoId. GeoId index out range.");
+        throw Base::IndexError("Sketch::checkGeoId. GeoId index out of range.");
     }
     return geoId;
 }
