@@ -581,6 +581,8 @@ SET(Part_SRCS
     PreCompiled.h
     Services.cpp
     Services.h
+    SignalException.cpp
+    SignalException.h
     TopoShape.cpp
     TopoShape.h
     TopoShapeCache.cpp
