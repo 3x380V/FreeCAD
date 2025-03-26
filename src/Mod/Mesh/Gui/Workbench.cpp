@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QCoreApplication>
 #include <QGroupBox>
 #include <QObject>
 #include <QLabel>
@@ -58,6 +59,8 @@ Workbench::Workbench() = default;
 
 class MeshInfoWatcher: public Gui::TaskView::TaskWatcher, public Gui::SelectionObserver
 {
+    Q_DECLARE_TR_FUNCTIONS(MeshInfoWatcher)
+
 public:
     MeshInfoWatcher()
         : TaskWatcher(nullptr)
