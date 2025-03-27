@@ -2801,15 +2801,12 @@ void Application::initApplication()
     Application::_pcSingleton = new Application(mConfig);
 
     // set up Unit system default
-    ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath
-       ("User parameter:BaseApp/Preferences/Units");
-    Base::UnitsApi::setSchema(static_cast<Base::UnitSystem>(hGrp->GetInt("UserSchema", 0)));
-    Base::UnitsApi::setDecimals(static_cast<int>(hGrp->GetInt("Decimals", Base::UnitsApi::getDecimals())));
-
-    // In case we are using fractional inches, get user setting for min unit
-    int denom = static_cast<int>(hGrp->GetInt("FracInch", Base::QuantityFormat::getDefaultDenominator()));
-    Base::QuantityFormat::setDefaultDenominator(denom);
-
+    const ParameterGrp::handle hGrp =
+        _pcSingleton->GetParameterGroupByPath("User parameter:BaseApp/Preferences/Units");
+    Base::UnitsApi::setSchema(hGrp->GetInt("UserSchema", Base::UnitsApi::getDefSchemaNum()));
+    Base::UnitsApi::setDecimals(hGrp->GetInt("Decimals", Base::UnitsApi::getDecimals()));
+    Base::QuantityFormat::setDefaultDenominator(
+        hGrp->GetInt("FracInch", Base::QuantityFormat::getDefaultDenominator()));
 
 #if defined (_DEBUG)
     Base::Console().Log("Application is built with debug information\n");

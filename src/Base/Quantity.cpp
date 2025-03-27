@@ -65,7 +65,7 @@ int QuantityFormat::defaultDenominator = 8;  // for 1/8"
 QuantityFormat::QuantityFormat()
     : option(OmitGroupSeparator | RejectGroupSeparator)
     , format(Fixed)
-    , precision(UnitsApi::getDecimals())
+    , precision(static_cast<int>(UnitsApi::getDecimals()))
     , denominator(defaultDenominator)
 {}
 
@@ -257,7 +257,7 @@ std::string Quantity::getUserString(double& factor, std::string& unitString) con
 std::string
 Quantity::getUserString(UnitsSchema* schema, double& factor, std::string& unitString) const
 {
-    return schema->schemaTranslate(*this, factor, unitString);
+    return schema->translate(*this, factor, unitString);
 }
 
 std::string Quantity::getSafeUserString() const
