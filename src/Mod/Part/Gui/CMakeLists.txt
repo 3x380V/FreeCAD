@@ -144,6 +144,8 @@ SET(PartGui_SRCS
     PreCompiled.h
     PreviewUpdateScheduler.cpp
     PreviewUpdateScheduler.h
+    ProgressIndicator.cpp
+    ProgressIndicator.h
     PropertyEnumAttacherItem.cpp
     PropertyEnumAttacherItem.h
     SoFCShapeObject.cpp
