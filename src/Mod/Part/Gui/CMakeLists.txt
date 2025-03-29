@@ -140,6 +140,8 @@ SET(PartGui_SRCS
     PatternParametersWidget.ui
     Resources/Part.qrc
     PreCompiled.h
+    ProgressIndicator.cpp
+    ProgressIndicator.h
     PropertyEnumAttacherItem.cpp
     PropertyEnumAttacherItem.h
     SoFCShapeObject.cpp
