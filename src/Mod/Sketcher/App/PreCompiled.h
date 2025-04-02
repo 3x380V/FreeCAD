@@ -38,9 +38,6 @@
 # include <string>
 # include <vector>
 
-// Qt
-# include <QDateTime>
-
 // Boost
 # include <boost/algorithm/string.hpp>
 # include <boost/algorithm/string/predicate.hpp>
@@ -104,6 +101,9 @@
 # include <gp_Parab.hxx>
 # include <gp_Pln.hxx>
 # include <gp_Pnt.hxx>
+
+// Qt
+# include <QDateTime>
 
 #elif defined(FC_OS_WIN32)
 # include <windows.h>
