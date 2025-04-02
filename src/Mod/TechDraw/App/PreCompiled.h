@@ -48,6 +48,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost_regex.hpp>
 
+// OpenCasCade
+#include <Mod/Part/App/OpenCascadeAll.h>
+
 // Qt
 #include <QApplication>
 #include <QCollator>
