@@ -763,7 +763,8 @@ MenuItem* StdWorkbench::setupMenuBar() const
     auto tool = new MenuItem(menuBar);
     tool->setCommand("&Tools");
 #ifdef BUILD_ADDONMGR
-    if (Application::Instance->commandManager().getCommandByName("Std_AddonMgr")) {
+    const auto& cmdmgr = Gui::Application::Instance->commandManager();
+    if (cmdmgr.getCommandByName("Std_AddonMgr")) {
         *tool << "Std_AddonMgr"
               << "Separator";
     }
@@ -785,7 +786,6 @@ MenuItem* StdWorkbench::setupMenuBar() const
           << "Std_ProjectUtil"
           << "Std_DlgParameter"
           << "Std_DlgCustomize";
-
     // Macro
     auto macro = new MenuItem(menuBar);
     macro->setCommand("&Macro");
