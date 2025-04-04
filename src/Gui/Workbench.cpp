@@ -719,8 +719,11 @@ MenuItem* StdWorkbench::setupMenuBar() const
     auto tool = new MenuItem( menuBar );
     tool->setCommand("&Tools");
 #ifdef BUILD_ADDONMGR
-    *tool << "Std_AddonMgr"
-          << "Separator";
+    const auto& cmdmgr = Gui::Application::Instance->commandManager();
+    if (cmdmgr.getCommandByName("Std_AddonMgr")) {
+        *tool << "Std_AddonMgr"
+              << "Separator";
+    }
 #endif
     *tool << "Std_Measure"
           << "Std_QuickMeasure"
@@ -738,7 +741,6 @@ MenuItem* StdWorkbench::setupMenuBar() const
           << "Std_ProjectUtil"
           << "Std_DlgParameter"
           << "Std_DlgCustomize";
-
     // Macro
     auto macro = new MenuItem( menuBar );
     macro->setCommand("&Macro");
