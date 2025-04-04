@@ -55,13 +55,17 @@ class PartDesignWorkbench(Workbench):
         import PartDesignGui
         import PartDesign
 
-        from PartDesign.InvoluteGearFeature import CommandInvoluteGear
+        try:
+            from PartDesign.InvoluteGearFeature import CommandInvoluteGear
+            Gui.addCommand('PartDesign_InvoluteGear', CommandInvoluteGear())
+        except ImportError:
+            print("InvoluteGear module cannot be loaded")
 
-        Gui.addCommand("PartDesign_InvoluteGear", CommandInvoluteGear())
-
-        from PartDesign.SprocketFeature import CommandSprocket
-
-        FreeCADGui.addCommand("PartDesign_Sprocket", CommandSprocket())
+        try:
+            from PartDesign.SprocketFeature import CommandSprocket
+            FreeCADGui.addCommand('PartDesign_Sprocket', CommandSprocket())
+        except ImportError:
+            print("Sprocket module cannot be loaded")
 
     def GetClassName(self):
         return "PartDesignGui::Workbench"
