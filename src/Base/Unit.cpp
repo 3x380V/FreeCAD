@@ -281,11 +281,6 @@ int Unit::angle() const
     return sig.Angle;
 }
 
-bool Unit::isEmpty() const
-{
-    return Val == 0;
-}
-
 int Unit::operator [](int index) const
 {
     UnitSignature sig;
@@ -316,6 +311,23 @@ int Unit::operator [](int index) const
 bool Unit::operator ==(const Unit& that) const
 {
     return Val == that.Val;
+}
+
+bool Unit::operator !=(const Unit& that) const
+{
+    return Val != that.Val;
+}
+
+bool Unit::operator ==(const int one) const
+{
+//    static_assert(one == 1, "Invalid Unit dimension");
+    return Val == 0;
+}
+
+bool Unit::operator !=(const int one) const
+{
+//    static_assert(one == 1, "Invalid Unit dimension");
+    return Val != 0;
 }
 
 Unit Unit::operator *(const Unit &right) const
@@ -360,7 +372,7 @@ Unit Unit::operator /(const Unit &right) const
 
 std::string Unit::getString() const
 {
-    if (isEmpty()) {
+    if (Val == 0) {
         return {};
     }
 

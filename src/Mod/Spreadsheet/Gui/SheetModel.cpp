@@ -384,7 +384,7 @@ QVariant SheetModel::data(const QModelIndex& index, int role) const
 
                 // Display locale specific decimal separator (#0003875,#0003876)
                 if (cell->getDisplayUnit(displayUnit)) {
-                    if (computedUnit.isEmpty() || computedUnit == displayUnit.unit) {
+                    if (computedUnit == 1 || computedUnit == displayUnit.unit) {
                         QString number =
                             QLocale().toString(floatProp->getValue() / displayUnit.scaler,
                                                'f',

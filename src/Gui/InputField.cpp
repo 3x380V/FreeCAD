@@ -281,7 +281,7 @@ void InputField::newInput(const QString & text)
         res.setUnit(this->actUnit);
 
     // check if unit fits!
-    if (!actUnit.isEmpty() && !res.isDimensionless() && actUnit != res.getUnit()){
+    if (actUnit != 1 && !res.isDimensionless() && actUnit != res.getUnit()) {
         QPixmap pixmap = getValidationIcon(":/icons/button_invalid.svg", iconLabel->sizeHint());
         iconLabel->setPixmap(pixmap);
         Q_EMIT parseError(QStringLiteral("Wrong unit"));

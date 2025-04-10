@@ -283,7 +283,7 @@ std::string Quantity::getSafeUserString() const
 /// true if it has a number without a unit
 bool Quantity::isDimensionless() const
 {
-    return myUnit.isEmpty();
+    return myUnit == 1;
 }
 
 /// true if it has a specific unit or no dimension.
