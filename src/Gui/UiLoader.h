@@ -22,7 +22,9 @@
 
 #pragma once
 
-#if !defined(__MINGW32__)
+#include <QtGlobal>
+
+#if !defined(__MINGW32__) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 # define HAVE_QT_UI_TOOLS
 #endif
 
