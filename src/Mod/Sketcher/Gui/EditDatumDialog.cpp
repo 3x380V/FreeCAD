@@ -184,7 +184,7 @@ int EditDatumDialog::exec(bool atCursor)
 void EditDatumDialog::accepted()
 {
     Base::Quantity newQuant = ui_ins_datum->labelEdit->value();
-    if (newQuant.isQuantity() || (Constr->Type == Sketcher::SnellsLaw && newQuant.isDimensionless())
+    if (!newQuant.isDimensionless() || (Constr->Type == Sketcher::SnellsLaw && newQuant.isDimensionless())
         || (Constr->Type == Sketcher::Weight && newQuant.isDimensionless())) {
 
         // save the value for the history
