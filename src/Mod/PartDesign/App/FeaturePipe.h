@@ -55,6 +55,7 @@ public:
     {
         return "PartDesignGui::ViewProviderPipe";
     }
+    const char* getPropertyLabel(const App::Property* prop) const override;
     App::DocumentObjectExecReturn* _execute(
         ProfileBased* feat,
         const TopoShape& path,
