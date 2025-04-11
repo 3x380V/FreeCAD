@@ -601,8 +601,9 @@ Base::Unit FemPostPipeline::getFrameUnit()
         // units cannot be undefined, so use time
         return Base::Unit::TimeSpan;
     }
-
-    return Base::Unit(vtkStringArray::SafeDownCast(TimeInfo)->GetValue(1));
+// FIXME
+//    return Base::Unit(vtkStringArray::SafeDownCast(TimeInfo)->GetValue(1));
+    return Base::Unit::TimeSpan;
 }
 
 std::vector<double> FemPostPipeline::getFrameValues()
