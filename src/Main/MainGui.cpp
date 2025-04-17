@@ -226,7 +226,7 @@ int main(int argc, char** argv)
 #endif
         // to set window icon on wayland, the desktop file has to be available to the compositor
         QGuiApplication::setDesktopFileName(
-            QString::fromLatin1(App::Application::Config()["DesktopFileName"].c_str()));
+            QString::fromStdString(App::Application::Config()["DesktopFileName"]));
 
 #if defined(_MSC_VER)
         // create a dump file when the application crashes
@@ -253,13 +253,13 @@ int main(int argc, char** argv)
     }
     catch (const Base::UnknownProgramOption& e) {
         QApplication app(argc, argv);
-        QString msg = QString::fromLatin1(e.what());
+        QString msg = QString::fromStdString(e.what());
         displayCritical(msg);
         exit(1);
     }
     catch (const Base::ProgramInformation& e) {
         QApplication app(argc, argv);
-        QString msg = QString::fromUtf8(e.what());
+        QString msg = QString::fromStdString(e.what());
         if (msg == QLatin1String(App::Application::verboseVersionEmitMessage)) {
             QString data;
             QTextStream str(&data);
@@ -277,19 +277,19 @@ int main(int argc, char** argv)
     catch (const Base::Exception& e) {
         // Popup an own dialog box instead of that one of Windows
         QApplication app(argc, argv);
-        QString appName = QString::fromLatin1(App::Application::Config()["ExeName"].c_str());
+        QString appName = QString::fromStdString(App::Application::Config()["ExeName"]);
         QString msg;
         msg = QObject::tr("While initializing %1 the following exception occurred: '%2'\n\n"
                           "Python is searching for its files in the following directories:\n%3\n\n"
                           "Python version information:\n%4\n")
                   .arg(appName,
-                       QString::fromUtf8(e.what()),
+                       QString::fromStdString(e.what()),
                        QString::fromStdString(Base::Interpreter().getPythonPath()),
                        QString::fromLatin1(Py_GetVersion()));
         const char* pythonhome = getenv("PYTHONHOME");
         if (pythonhome) {
             msg += QObject::tr("\nThe environment variable PYTHONHOME is set to '%1'.")
-                       .arg(QString::fromUtf8(pythonhome));
+                       .arg(QString::fromStdString(pythonhome));
             msg += QObject::tr("\nSetting this environment variable might cause Python to fail. "
                                "Please contact your administrator to unset it on your system.\n\n");
         }
@@ -304,7 +304,7 @@ int main(int argc, char** argv)
     catch (...) {
         // Popup an own dialog box instead of that one of Windows
         QApplication app(argc, argv);
-        QString appName = QString::fromLatin1(App::Application::Config()["ExeName"].c_str());
+        QString appName = QString::fromStdString(App::Application::Config()["ExeName"]);
         QString msg =
             QObject::tr("Unknown runtime error occurred while initializing %1.\n\n"
                         "Please contact the application's support team for more information.\n\n")
