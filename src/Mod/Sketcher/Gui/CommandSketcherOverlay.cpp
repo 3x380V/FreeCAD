@@ -47,14 +47,35 @@ using namespace std;
 using namespace SketcherGui;
 using namespace Sketcher;
 
-
-void ShowRestoreInformationLayer(const char* visibleelementname)
+namespace
 {
-    ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath(
-        "User parameter:BaseApp/Preferences/Mod/Sketcher/General");
-    bool status = hGrp->GetBool(visibleelementname, true);
-    hGrp->SetBool(visibleelementname, !status);
-}
+class InformationLayer
+{
+public:
+    explicit InformationLayer(const char* visibleelementname)
+        : elementname {visibleelementname}
+    {
+        hGrp = App::GetApplication().GetParameterGroupByPath(
+            "User parameter:BaseApp/Preferences/Mod/Sketcher/General");
+    }
+
+    bool getValue() const
+    {
+        return hGrp->GetBool(elementname.data(), true);
+    }
+
+    bool toggleValue()
+    {
+        bool status = !hGrp->GetBool(elementname.data(), true);
+        hGrp->SetBool(elementname.data(), status);
+        return status;
+    }
+
+private:
+    ParameterGrp::handle hGrp;
+    std::string_view elementname;
+};
+}  // namespace
 
 // Show/Hide B-spline degree
 DEF_STD_CMD_A(CmdSketcherBSplineDegree)
@@ -77,7 +98,8 @@ void CmdSketcherBSplineDegree::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
 
-    ShowRestoreInformationLayer("BSplineDegreeVisible");
+    InformationLayer layer("BSplineDegreeVisible");
+    layer.toggleValue();
 }
 
 bool CmdSketcherBSplineDegree::isActive()
@@ -107,7 +129,8 @@ void CmdSketcherBSplinePolygon::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
 
-    ShowRestoreInformationLayer("BSplineControlPolygonVisible");
+    InformationLayer layer("BSplineControlPolygonVisible");
+    layer.toggleValue();
 }
 
 bool CmdSketcherBSplinePolygon::isActive()
@@ -137,7 +160,8 @@ void CmdSketcherBSplineComb::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
 
-    ShowRestoreInformationLayer("BSplineCombVisible");
+    InformationLayer layer("BSplineCombVisible");
+    layer.toggleValue();
 }
 
 bool CmdSketcherBSplineComb::isActive()
@@ -167,7 +191,8 @@ void CmdSketcherBSplineKnotMultiplicity::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
 
-    ShowRestoreInformationLayer("BSplineKnotMultiplicityVisible");
+    InformationLayer layer("BSplineKnotMultiplicityVisible");
+    layer.toggleValue();
 }
 
 bool CmdSketcherBSplineKnotMultiplicity::isActive()
@@ -197,7 +222,8 @@ void CmdSketcherBSplinePoleWeight::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
 
-    ShowRestoreInformationLayer("BSplinePoleWeightVisible");
+    InformationLayer layer("BSplinePoleWeightVisible");
+    layer.toggleValue();
 }
 
 bool CmdSketcherBSplinePoleWeight::isActive()
@@ -352,7 +378,7 @@ bool CmdSketcherCompBSplineShowHideGeometryInformation::isActive()
 }
 
 //
-DEF_STD_CMD_A(CmdSketcherArcOverlay)
+DEF_STD_CMD_AC(CmdSketcherArcOverlay)
 
 CmdSketcherArcOverlay::CmdSketcherArcOverlay()
     : Command("Sketcher_ArcOverlay")
@@ -369,11 +395,23 @@ CmdSketcherArcOverlay::CmdSketcherArcOverlay()
     eType = ForEdit;
 }
 
+Gui::Action* CmdSketcherArcOverlay::createAction()
+{
+    Gui::Action* action = Command::createAction();
+    action->setCheckable(true);
+
+    InformationLayer layer("ArcCircleHelperVisible");
+    action->setBlockedChecked(layer.getValue());
+
+    return action;
+}
+
 void CmdSketcherArcOverlay::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
 
-    ShowRestoreInformationLayer("ArcCircleHelperVisible");
+    InformationLayer layer("ArcCircleHelperVisible");
+    getAction()->setBlockedChecked(layer.toggleValue());
 }
 
 bool CmdSketcherArcOverlay::isActive()
