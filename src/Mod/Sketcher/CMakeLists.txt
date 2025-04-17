@@ -21,6 +21,7 @@ set(Sketcher_TestScripts
     SketcherTests/TestSketchCarbonCopyReverseMapping.py
     SketcherTests/TestSketchCarbonCopyReverseMapping.FCStd
     SketcherTests/TestSketchMoveConstraint.py
+    SketcherTests/TestSketcherSpline.py
 )
 
 if(BUILD_GUI)
