@@ -1722,7 +1722,8 @@ bool Feature::getCameraAlignmentDirection(Base::Vector3d& directionZ, Base::Vect
     }
 
     // Face normal
-    if (topoShape.isPlanar()) {
+    const double planarTol = 0.001;
+    if (topoShape.isPlanar(planarTol)) {
         try {
             const auto face = TopoDS::Face(topoShape.getShape());
             gp_Pnt point;
