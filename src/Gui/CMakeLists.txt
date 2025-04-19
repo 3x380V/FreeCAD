@@ -1384,6 +1384,7 @@ SET(FreeCADGui_CPP_SRCS
     SpaceballEvent.cpp
     StatusBarLabel.cpp
     PreferencePackManager.cpp
+    ProgramInformation.cpp
     Thumbnail.cpp
     Utilities.cpp
     WaitCursor.cpp
@@ -1426,6 +1427,7 @@ SET(FreeCADGui_SRCS
     Control.h
     SpaceballEvent.h
     PreferencePackManager.h
+    ProgramInformation.h
     Thumbnail.h
     Tools.h
     Utilities.h
