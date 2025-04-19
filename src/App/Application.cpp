@@ -134,6 +134,7 @@
 #include "Datums.h"
 #include "OriginGroupExtension.h"
 #include "OriginGroupExtensionPy.h"
+#include "ProgramInformation.h"
 #include "SuppressibleExtension.h"
 #include "Part.h"
 #include "GeoFeaturePy.h"
@@ -2270,6 +2271,9 @@ void processProgramOptions(const boost::program_options::variables_map& vm, std:
         std::stringstream str;
         str << mConfig["ExeName"] << " " << mConfig["ExeVersion"]
             << " Revision: " << mConfig["BuildRevision"] << '\n';
+        if (vm.count("verbose")) {
+            App::ProgramInformation::getVerboseCommonInfo(str, mConfig);
+        }
         throw Base::ProgramInformation(str.str());
     }
 
