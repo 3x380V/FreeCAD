@@ -209,6 +209,7 @@ SET(FreeCADBase_CPP_SRCS
     Observer.cpp
     Parameter.xsd
     Parameter.cpp
+    ParameterObserver.cpp
     ParameterPy.cpp
     Persistence.cpp
     PersistencePyImp.cpp
@@ -279,6 +280,7 @@ SET(FreeCADBase_HPP_SRCS
     Matrix.h
     Observer.h
     Parameter.h
+    ParameterObserver.h
     Persistence.h
     Placement.h
     Precision.h
