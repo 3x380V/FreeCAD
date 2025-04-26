@@ -21,8 +21,9 @@
  ***************************************************************************/
 
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
 
-
+#include <fmt/format.h>
 #include <Base/Exception.h>
 #include <Base/PlacementPy.h>
 #include <Base/PyWrapParseTupleAndKeywords.h>
@@ -37,19 +38,19 @@ using namespace Path;
 // returns a string which represents the object e.g. when printed in python
 std::string CommandPy::representation() const
 {
+    std::vector<std::string> items;
+    items.reserve(getCommandPtr()->Parameters.size());
+    for (const auto& it : getCommandPtr()->Parameters) {
+        items.emplace_back(fmt::format("'{}': {}", it.first, it.second));
+    }
+
     std::stringstream str;
     str.precision(5);
-    str << "Command ";
-    str << getCommandPtr()->Name;
-    str << " [";
-    for (std::map<std::string, double>::iterator i = getCommandPtr()->Parameters.begin();
-         i != getCommandPtr()->Parameters.end();
-         ++i) {
-        std::string k = i->first;
-        double v = i->second;
-        str << " " << k << ":" << v;
-    }
-    str << " ]";
+    str << "Command(";
+    str << "'" << getCommandPtr()->Name << "',";
+    str << " {";
+    str << boost::algorithm::join(items, ", ");
+    str << "})";
     return str.str();
 }
 
