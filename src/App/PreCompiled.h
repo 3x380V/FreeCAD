@@ -68,6 +68,7 @@
 #include <sstream>
 
 // STL
+#include <array>
 #include <bitset>
 #include <chrono>
 #if defined(FC_OS_WIN32)
