@@ -297,7 +297,6 @@ void TaskDressUpParameters::createAddAllEdgesAction(QListWidget* parentList)
 void TaskDressUpParameters::createDeleteAction(QListWidget* parentList)
 {
     // creates a context menu, a shortcut for it and connects it to a slot function
-
     deleteAction = new QAction(tr("Remove"), this);
     deleteAction->setShortcut(Gui::QtTools::deleteKeySequence());
 
