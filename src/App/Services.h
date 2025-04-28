@@ -71,6 +71,17 @@ public:
     bool supports(DocumentObject* object) const override;
 };
 
+/**
+* This service should provide custom attribute access of a Python object
+*/
+class CustomAttributeProvider
+{
+public:
+    virtual ~CustomAttributeProvider() = default;
+
+    virtual std::optional<PyObject*> getAttribute(DocumentObject* object, const char* attr) const = 0;
+};
+
 }
 
 
