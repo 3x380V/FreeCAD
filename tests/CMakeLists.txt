@@ -129,6 +129,12 @@ endif()
 
 # -------------------------
 
+if (FREECAD_WARN_ERROR)
+    foreach (exe ${TestExecutables})
+        target_compile_warn_error(${exe})
+    endforeach()
+endif()
+
 if ( NOT FREECAD_USE_EXTERNAL_GTEST )
     if(WIN32)
         set(BUILD_SHARED_LIBS OFF)
