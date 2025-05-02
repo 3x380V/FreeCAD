@@ -27,8 +27,11 @@
 #  include <windows.h>
 # endif
 
+#include <QMenu>
+
 #include <App/DocumentObject.h>
 #include <Base/Parameter.h>
+#include <Gui/ActionFunction.h>
 #include <Gui/Control.h>
 #include <Gui/Selection/Selection.h>
 
@@ -145,6 +148,18 @@ bool ViewProviderViewSection::doubleClicked()
 {
     setEdit(ViewProvider::Default);
     return true;
+}
+
+void ViewProviderViewSection::setupContextMenu(QMenu* menu, QObject* receiver, const char* member)
+{
+    auto* func = new Gui::ActionFunction(menu);
+    QAction* act = menu->addAction(QObject::tr("Edit Section View"));
+    act->setData(QVariant((int)ViewProvider::Default));
+    func->trigger(act, [this]() {
+        this->doubleClicked();
+    });
+
+    ViewProviderViewPart::setupContextMenu(menu, receiver, member);
 }
 
 void ViewProviderViewSection::getParameters()
