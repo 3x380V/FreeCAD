@@ -54,6 +54,7 @@ public:
     void onChanged(const App::Property *prop) override;
     bool setEdit(int ModNum) override;
     bool doubleClicked() override;
+    void setupContextMenu(QMenu* menu, QObject* receiver, const char* member) override;
 
     void updateGraphic();
     void getParameters();
