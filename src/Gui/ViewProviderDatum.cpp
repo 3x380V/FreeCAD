@@ -156,6 +156,12 @@ void ViewProviderDatum::onChanged(const App::Property* prop)
     ViewProviderGeometryObject::onChanged(prop);
 }
 
+void ViewProviderDatum::setupContextMenu(QMenu* menu, QObject* receiver, const char* member)
+{
+    // Use ViewProviderDocumentObject to avoid to add new commands from ViewProviderGeometryObject
+    ViewProviderDocumentObject::setupContextMenu(menu, receiver, member);  // NOLINT
+}
+
 std::vector<std::string> ViewProviderDatum::getDisplayModes() const
 {
     // add modes

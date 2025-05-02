@@ -21,13 +21,12 @@
  *                                                                         *
  ***************************************************************************/
 
-
-
-# include <QMessageBox>
-# include <QTextStream>
-
+#include <QMenu>
+#include <QMessageBox>
+#include <QTextStream>
 
 #include <App/DocumentObject.h>
+#include <Gui/ActionFunction.h>
 #include <Gui/Application.h>
 #include <Gui/Control.h>
 #include <Gui/MainWindow.h>
@@ -96,6 +95,18 @@ bool ViewProviderLeader::doubleClicked()
 //    Base::Console().message("VPL::doubleClicked()\n");
     setEdit(ViewProvider::Default);
     return true;
+}
+
+void ViewProviderLeader::setupContextMenu(QMenu* menu, QObject* receiver, const char* member)
+{
+    auto* func = new Gui::ActionFunction(menu);
+    QAction* act = menu->addAction(QObject::tr("Edit Leader Line"));
+    act->setData(QVariant((int)ViewProvider::Default));
+    func->trigger(act, [this]() {
+        this->startDefaultEditMode();
+    });
+
+    ViewProviderDrawingView::setupContextMenu(menu, receiver, member);
 }
 
 void ViewProviderLeader::onChanged(const App::Property* prop)
