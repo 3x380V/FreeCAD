@@ -21,8 +21,11 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QMenu>
+
 #include <App/DocumentObject.h>
 #include <Base/Parameter.h>
+#include <Gui/ActionFunction.h>
 #include <Gui/Application.h>
 #include <Gui/Control.h>
 #include <Gui/Document.h>
@@ -90,6 +93,18 @@ bool ViewProviderGeomHatch::doubleClicked()
 {
     setEdit(0);
     return true;
+}
+
+void ViewProviderGeomHatch::setupContextMenu(QMenu* menu, QObject* receiver, const char* member)
+{
+    auto* func = new Gui::ActionFunction(menu);
+    QAction* act = menu->addAction(QCoreApplication::translate("TechDrawGui::TaskGeomHatch", "Apply Geometric Hatch to Face"));
+    act->setData(QVariant((int)ViewProvider::Default));
+    func->trigger(act, [this]() {
+        this->doubleClicked();
+    });
+
+    ViewProviderDocumentObject::setupContextMenu(menu, receiver, member);
 }
 
 //for VP properties - but each letter/digit in property editor triggers this!
