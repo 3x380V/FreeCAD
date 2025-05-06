@@ -59,7 +59,10 @@ from draftutils.units import display_external
 
 
 def _get_incmd_shortcut(itm):
-    return params.get_param("inCommandShortcut" + itm).upper()
+    shortcut = params.get_param("inCommandShortcut" + itm)
+    if shortcut is None:
+        return ""
+    return shortcut.upper()
 
 
 # ---------------------------------------------------------------------------
