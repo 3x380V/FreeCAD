@@ -49,6 +49,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QLocale>
 #include <QMetaObject>
 #include <QMutexLocker>
 #include <QObject>
