@@ -58,13 +58,13 @@ public:
 /**
  * @author Werner Mayer
  */
-class CallTipsList: public QListWidget
+class CallTipsList: public QListWidget  // NOLINT
 {
     Q_OBJECT
 
 public:
     /// Construction
-    CallTipsList(QPlainTextEdit* parent);
+    explicit CallTipsList(QPlainTextEdit* parent);
     /// Destruction
     ~CallTipsList() override;
 

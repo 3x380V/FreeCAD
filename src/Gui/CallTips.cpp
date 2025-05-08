@@ -47,6 +47,7 @@
 #include "CallTips.h"
 
 
+// NOLINTNEXTLINE
 Q_DECLARE_METATYPE(Gui::CallTip)  //< allows use of QVariant
 
 namespace Gui
@@ -57,7 +58,7 @@ namespace Gui
  * Allows variable changes limited to a scope.
  */
 template<typename TYPE>
-class Temporary
+class Temporary  // NOLINT
 {
 public:
     Temporary(TYPE& var, const TYPE tmpVal)
@@ -195,6 +196,7 @@ void CallTipsList::validateCursor()
 
 QString CallTipsList::extractContext(const QString& line) const
 {
+    // NOLINTBEGIN
     int len = line.size();
     int index = len - 1;
     for (int i = 0; i < len; i++) {
@@ -211,6 +213,7 @@ QString CallTipsList::extractContext(const QString& line) const
             break;
         }
     }
+    // NOLINTEND
 
     return line.mid(index);
 }
@@ -307,7 +310,7 @@ QMap<QString, CallTip> CallTipsList::extractTips(const QString& context) const
 
         // If we have an instance of PyObjectBase then determine whether it's valid or not
         if (PyObject_IsInstance(inst.ptr(), typeobj) == 1) {
-            auto baseobj = static_cast<Base::PyObjectBase*>(inst.ptr());
+            auto baseobj = static_cast<Base::PyObjectBase*>(inst.ptr());  // NOLINT
             validObject = baseobj->isValid();
         }
         else {
@@ -330,7 +333,7 @@ QMap<QString, CallTip> CallTipsList::extractTips(const QString& context) const
         // names. So, we add these names to the list, too.
         PyObject* appdoctypeobj = Base::getTypeAsObject(&App::DocumentPy::Type);
         if (PyObject_IsSubclass(type.ptr(), appdoctypeobj) == 1) {
-            auto docpy = static_cast<App::DocumentPy*>(inst.ptr());
+            auto docpy = static_cast<App::DocumentPy*>(inst.ptr());  // NOLINT
             auto document = docpy->getDocumentPtr();
             // Make sure that the C++ object is alive
             if (document) {
@@ -347,7 +350,7 @@ QMap<QString, CallTip> CallTipsList::extractTips(const QString& context) const
         // names. So, we add these names to the list, too.
         PyObject* guidoctypeobj = Base::getTypeAsObject(&Gui::DocumentPy::Type);
         if (PyObject_IsSubclass(type.ptr(), guidoctypeobj) == 1) {
-            auto docpy = static_cast<Gui::DocumentPy*>(inst.ptr());
+            auto docpy = static_cast<Gui::DocumentPy*>(inst.ptr());  // NOLINT
             if (docpy->getDocumentPtr()) {
                 App::Document* document = docpy->getDocumentPtr()->getDocument();
                 // Make sure that the C++ object is alive
@@ -373,20 +376,26 @@ QMap<QString, CallTip> CallTipsList::extractTips(const QString& context) const
     return tips;
 }
 
-bool shibokenMayCrash(void)
+static bool shibokenMayCrash()
 {
     // Shiboken 6.4.8 to 6.7.3 crash if we try to read their object
     // attributes without a current stack frame.
     // FreeCAD issue: https://github.com/FreeCAD/FreeCAD/issues/14101
     // Qt issue: https://bugreports.qt.io/browse/PYSIDE-2796
+    const int minMajor = 6;
+    const int minMinor = 4;
+    const int minPatch = 8;
+    const int maxMajor = 6;
+    const int maxMinor = 7;
+    const int maxPatch = 3;
 
     Py::Module shiboken("shiboken6");
     Py::Tuple version(shiboken.getAttr("__version_info__"));
     int major = Py::Long(version.getItem(0));
     int minor = Py::Long(version.getItem(1));
     int patch = Py::Long(version.getItem(2));
-    bool brokenVersion = (major == 6 && minor >= 4 && minor < 8);
-    bool fixedVersion = (major == 6 && minor == 7 && patch > 2);
+    bool brokenVersion = (major == minMajor && minor >= minMinor && minor < minPatch);
+    bool fixedVersion = (major == maxMajor && minor == maxMinor && patch >= maxPatch);
     return brokenVersion && !fixedVersion;
 }
 
@@ -435,7 +444,7 @@ void CallTipsList::extractTipsFromObject(const Py::Object& obj,
                                          const Py::List& list,
                                          QMap<QString, CallTip>& tips) const
 {
-    for (auto it : list) {  // NOLINT
+    for (auto it : list) {
         try {
             Py::String attrname(it);
             std::string name(attrname.as_string());
@@ -485,8 +494,7 @@ CallTip CallTipsList::extractTipsFromAttribute(const Py::Object& attr, const QSt
     }
 
     if (str == QLatin1String("__doc__") && attr.isString()) {
-        Py::Object help = attr;
-        tryGetDocString(help, tip);
+        tryGetDocString(attr, tip);
     }
     else if (attr.hasAttr("__doc__")) {
         Py::Object help = attr.getAttr("__doc__");
@@ -498,7 +506,7 @@ CallTip CallTipsList::extractTipsFromAttribute(const Py::Object& attr, const QSt
 
 void CallTipsList::extractTipsFromProperties(Py::Object& obj, QMap<QString, CallTip>& tips) const
 {
-    auto cont = static_cast<App::PropertyContainerPy*>(obj.ptr());
+    auto cont = static_cast<App::PropertyContainerPy*>(obj.ptr());  // NOLINT
     App::PropertyContainer* container = cont->getPropertyContainerPtr();
     // Make sure that the C++ object is alive
     if (!container) {
@@ -610,21 +618,22 @@ void CallTipsList::showTips(const QString& line)
     int posX = rect.x();
     int posY = rect.y();
     int boxH = h;
+    const int maxHeight = 250;
 
     // Decide whether to show downstairs or upstairs
-    if (posY > textEdit->viewport()->height() / 2) {
-        h = qMin(qMin(h, posY), 250);
+    if (posY > textEdit->viewport()->height()/2) {
+        h = qMin(qMin(h,posY), maxHeight);
         if (h < boxH) {
             w += textEdit->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
         }
-        setGeometry(posX, posY - h, w, h);
+        setGeometry(posX,posY-h, w, h);
     }
     else {
-        h = qMin(qMin(h, textEdit->viewport()->height() - fontMetrics().height() - posY), 250);
+        h = qMin(qMin(h,textEdit->viewport()->height()-fontMetrics().height()-posY), maxHeight);
         if (h < boxH) {
             w += textEdit->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
         }
-        setGeometry(posX, posY + fontMetrics().height(), w, h);
+        setGeometry(posX, posY+fontMetrics().height(), w, h);
     }
 
     setCurrentRow(0);
@@ -666,43 +675,44 @@ bool CallTipsList::eventFilter(QObject* watched, QEvent* event)
     }
     else if (isVisible() && watched == textEdit) {
         if (event->type() == QEvent::KeyPress) {
-            auto ke = static_cast<QKeyEvent*>(event);
+            auto ke = static_cast<QKeyEvent*>(event);  // NOLINT
             if (ke->key() == Qt::Key_Up || ke->key() == Qt::Key_Down) {
                 keyPressEvent(ke);
                 return true;
             }
-            else if (ke->key() == Qt::Key_PageUp || ke->key() == Qt::Key_PageDown) {
+            if (ke->key() == Qt::Key_PageUp || ke->key() == Qt::Key_PageDown) {
                 keyPressEvent(ke);
                 return true;
             }
-            else if (ke->key() == Qt::Key_Escape) {
+            if (ke->key() == Qt::Key_Escape) {
                 hide();
                 return true;
             }
-            else if ((ke->key() == Qt::Key_Minus) && (ke->modifiers() & Qt::ShiftModifier)) {
+            if ((ke->key() == Qt::Key_Minus) && (ke->modifiers() & Qt::ShiftModifier)) {
                 // do nothing here, but this check is needed to ignore underscore
                 // which in Qt 4.8 gives Key_Minus instead of Key_Underscore
+                return QListWidget::eventFilter(watched, event);
             }
-            else if (this->hideKeys.indexOf(ke->key()) > -1) {
+            if (this->hideKeys.indexOf(ke->key()) > -1) {
                 Q_EMIT itemActivated(currentItem());
                 return false;
             }
-            else if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
+            if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
                 Q_EMIT itemActivated(currentItem());
                 return true;
             }
-            else if (ke->key() == Qt::Key_Tab) {
+            if (ke->key() == Qt::Key_Tab) {
                 // enable call completion for activating items
                 Temporary<bool> tmp(this->doCallCompletion, true);  //< previous state restored on
                                                                     // scope exit
                 Q_EMIT itemActivated(currentItem());
                 return true;
             }
-            else if (this->compKeys.indexOf(ke->key()) > -1) {
+            if (this->compKeys.indexOf(ke->key()) > -1) {
                 Q_EMIT itemActivated(currentItem());
                 return false;
             }
-            else if (ke->key() == Qt::Key_Shift || ke->key() == Qt::Key_Control
+            if (ke->key() == Qt::Key_Shift || ke->key() == Qt::Key_Control
                      || ke->key() == Qt::Key_Meta || ke->key() == Qt::Key_Alt
                      || ke->key() == Qt::Key_AltGr) {
                 // filter these meta keys to avoid to call keyboardSearch()
@@ -710,7 +720,7 @@ bool CallTipsList::eventFilter(QObject* watched, QEvent* event)
             }
         }
         else if (event->type() == QEvent::KeyRelease) {
-            auto ke = static_cast<QKeyEvent*>(event);
+            auto ke = static_cast<QKeyEvent*>(event);  // NOLINT
             if (ke->key() == Qt::Key_Up || ke->key() == Qt::Key_Down || ke->key() == Qt::Key_PageUp
                 || ke->key() == Qt::Key_PageDown) {
                 QList<QListWidgetItem*> items = selectedItems();
