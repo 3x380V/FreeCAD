@@ -37,6 +37,7 @@
 
 using namespace Base;
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-static-cast-downcast, readability-*, performance-*)
 // returns a string which represents the object e.g. when printed in python
 std::string MatrixPy::representation() const
 {
@@ -988,10 +989,10 @@ void MatrixPy::setA44(Py::Float arg)
 
 Py::Sequence MatrixPy::getA() const
 {
-    double mat[16];
-    this->getMatrixPtr()->getMatrix(mat);
-    Py::Tuple tuple(16);
-    for (int i = 0; i < 16; i++) {
+    std::array<double, 16> mat;
+    this->getMatrixPtr()->getMatrix(mat.data());
+    Py::Tuple tuple(mat.size());
+    for (int i = 0; i < int(mat.size()); i++) {
         tuple[i] = Py::Float(mat[i]);
     }
     return tuple;
@@ -999,15 +1000,15 @@ Py::Sequence MatrixPy::getA() const
 
 void MatrixPy::setA(Py::Sequence arg)
 {
-    double mat[16];
-    this->getMatrixPtr()->getMatrix(mat);
+    std::array<double, 16> mat;
+    this->getMatrixPtr()->getMatrix(mat.data());
 
-    int index = 0;
-    for (Py::Sequence::iterator it = arg.begin(); it != arg.end() && index < 16; ++it) {
+    size_t index = 0;
+    for (auto it = arg.begin(); it != arg.end() && index < mat.size(); ++it) {
         mat[index++] = static_cast<double>(Py::Float(*it));
     }
 
-    this->getMatrixPtr()->setMatrix(mat);
+    this->getMatrixPtr()->setMatrix(mat.data());
 }
 
 PyObject* MatrixPy::getCustomAttributes(const char* /*attr*/) const
@@ -1118,3 +1119,4 @@ PyObject* MatrixPy::number_float_handler(PyObject* /*self*/)
     PyErr_SetString(PyExc_NotImplementedError, "Not implemented");
     return nullptr;
 }
+// NOLINTEND(cppcoreguidelines-pro-type-static-cast-downcast, readability-*, performance-*)
