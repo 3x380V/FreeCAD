@@ -200,6 +200,7 @@ class GuiExport WorkbenchGroup: public ActionGroup
 {
     Q_OBJECT
 
+    QAction* createAction(const QString& wbName, int id);
     QAction* getOrCreateAction(const QString& wbName);
 
 public:
