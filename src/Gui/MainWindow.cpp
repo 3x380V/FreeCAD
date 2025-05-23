@@ -1678,6 +1678,8 @@ void MainWindow::processMessages(const QList<QString>& msg)
         for (const auto& file : files) {
             QString filename = QString::fromUtf8(file.c_str(), file.size());
             FileDialog::setWorkingDirectory(filename);
+            QFileInfo fi(filename);
+            appendRecentFile(fi.absoluteFilePath());
         }
     }
     catch (const Base::SystemExitException&) {
@@ -1720,6 +1722,8 @@ void MainWindow::delayedStartup()
         for (const auto& file : files) {
             QString filename = QString::fromUtf8(file.c_str(), file.size());
             FileDialog::setWorkingDirectory(filename);
+            QFileInfo fi(filename);
+            appendRecentFile(fi.absoluteFilePath());
         }
     }
     catch (const Base::SystemExitException&) {
@@ -1769,6 +1773,7 @@ void MainWindow::appendRecentFile(const QString& filename)
     auto recent = this->findChild<RecentFilesAction*>(QStringLiteral("recentFiles"));
     if (recent) {
         recent->appendFile(filename);
+        Q_EMIT recentFileAdded(filename);
     }
 }
 

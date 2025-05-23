@@ -71,6 +71,7 @@ public:
     void newAssemblyFile();
     void newDraftFile();
     void newArchFile();
+    void recentFileAdded(const QString& filename);
 
     bool onHasMsg(const char* pMsg) const override;
 
