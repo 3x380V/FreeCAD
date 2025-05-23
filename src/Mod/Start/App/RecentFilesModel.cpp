@@ -46,3 +46,9 @@ void RecentFilesModel::loadRecentFiles()
     }
     endResetModel();
 }
+
+void RecentFilesModel::recentFileAdded(const QString& filename)
+{
+    Q_UNUSED(filename)
+    loadRecentFiles();
+}
