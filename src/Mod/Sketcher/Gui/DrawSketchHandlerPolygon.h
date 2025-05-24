@@ -562,14 +562,14 @@ DrawSketchHandlerPolygon::HintTable DrawSketchHandlerPolygon::getPolygonHintTabl
 {
     return {// Structure: {SelectMode, {hints...}}
             {SelectMode::SeekFirst,
-             {{QObject::tr("%1 pick polygon center"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick polygon center"), {{Gui::MouseInput::MouseLeft}}},
               {QObject::tr("%1/%2 increase / decrease number of sides"),
-               {Gui::InputHint::UserInput::KeyU, Gui::InputHint::UserInput::KeyJ}}}},
+               {{Qt::Key_U, Qt::Key_J}}}}},
             {SelectMode::SeekSecond,
-             {{QObject::tr("%1 pick rotation and size"), {Gui::InputHint::UserInput::MouseMove}},
-              {QObject::tr("%1 confirm"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick rotation and size"), {{Gui::MouseInput::MouseMove}}},
+              {QObject::tr("%1 confirm"), {{Gui::MouseInput::MouseLeft}}},
               {QObject::tr("%1/%2 increase / decrease number of sides"),
-               {Gui::InputHint::UserInput::KeyU, Gui::InputHint::UserInput::KeyJ}}}}};
+               {{Qt::Key_U, Qt::Key_J}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerPolygon::lookupPolygonHints(SelectMode state)

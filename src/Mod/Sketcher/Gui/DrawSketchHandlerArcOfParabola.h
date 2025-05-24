@@ -356,13 +356,13 @@ DrawSketchHandlerArcOfParabola::HintTable DrawSketchHandlerArcOfParabola::getPar
 {
     return {// Structure: {mode, {hints...}}
             {STATUS_SEEK_First,
-             {{QObject::tr("%1 pick focus point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick focus point"), {{Gui::MouseInput::MouseLeft}}}}},
             {STATUS_SEEK_Second,
-             {{QObject::tr("%1 pick axis point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick axis point"), {{Gui::MouseInput::MouseLeft}}}}},
             {STATUS_SEEK_Third,
-             {{QObject::tr("%1 pick starting point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick starting point"), {{Gui::MouseInput::MouseLeft}}}}},
             {STATUS_SEEK_Fourth,
-             {{QObject::tr("%1 pick end point"), {Gui::InputHint::UserInput::MouseLeft}}}}};
+             {{QObject::tr("%1 pick end point"), {{Gui::MouseInput::MouseLeft}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerArcOfParabola::lookupParabolaHints(int mode)
