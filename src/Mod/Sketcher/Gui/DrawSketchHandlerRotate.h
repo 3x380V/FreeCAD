@@ -90,25 +90,23 @@ public:
 
     std::list<Gui::InputHint> getToolHints() const override
     {
-        using enum Gui::InputHint::UserInput;
-
         return Gui::lookupHints<SelectMode>(
             state(),
             {
                 {.state = SelectMode::SeekFirst,
                  .hints =
                      {
-                         {tr("%1 pick center point", "Sketcher Rotate: hint"), {MouseLeft}},
+                         {tr("%1 pick center point", "Sketcher Rotate: hint"), {{Gui::MouseInput::MouseLeft}}},
                      }},
                 {.state = SelectMode::SeekSecond,
                  .hints =
                      {
-                         {tr("%1 set start angle", "Sketcher Rotate: hint"), {MouseLeft}},
+                         {tr("%1 set start angle", "Sketcher Rotate: hint"), {{Gui::MouseInput::MouseLeft}}},
                      }},
                 {.state = SelectMode::SeekThird,
                  .hints =
                      {
-                         {tr("%1 set rotation angle", "Sketcher Rotate: hint"), {MouseLeft}},
+                         {tr("%1 set rotation angle", "Sketcher Rotate: hint"), {{Gui::MouseInput::MouseLeft}}},
                      }},
             });
     }

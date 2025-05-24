@@ -349,30 +349,28 @@ protected:
 private:
     std::list<Gui::InputHint> getToolHints() const override
     {
-        using enum Gui::InputHint::UserInput;
-
         return Gui::lookupHints<SelectMode>(
             Mode,
             {
                 {.state = STATUS_SEEK_First,
                  .hints =
                      {
-                         {tr("%1 pick focus point"), {MouseLeft}},
+                         {tr("%1 pick focus point"), {{Gui::MouseInput::MouseLeft}}},
                      }},
                 {.state = STATUS_SEEK_Second,
                  .hints =
                      {
-                         {tr("%1 pick axis point"), {MouseLeft}},
+                         {tr("%1 pick axis point"), {{Gui::MouseInput::MouseLeft}}},
                      }},
                 {.state = STATUS_SEEK_Third,
                  .hints =
                      {
-                         {tr("%1 pick starting point"), {MouseLeft}},
+                         {tr("%1 pick starting point"), {{Gui::MouseInput::MouseLeft}}},
                      }},
                 {.state = STATUS_SEEK_Fourth,
                  .hints =
                      {
-                         {tr("%1 pick end point"), {MouseLeft}},
+                         {tr("%1 pick end point"), {{Gui::MouseInput::MouseLeft}}},
                      }},
             });
     }

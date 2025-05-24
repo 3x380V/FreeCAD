@@ -792,8 +792,6 @@ private:
 
     std::list<Gui::InputHint> getToolHints() const override
     {
-        using enum Gui::InputHint::UserInput;
-
         // clang-format off
         return Gui::lookupHints<SELECT_MODE>(
             Mode,
@@ -801,14 +799,14 @@ private:
                 {.state = STATUS_SEEK_First,
                  .hints =
                      {
-                         {tr("%1 pick first point"), {MouseLeft}},
+                         {tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}}},
                      }},
                 {.state = STATUS_SEEK_Second,
                  .hints =
                      {
-                         {tr("%1 pick next point"), {MouseLeft}},
-                         {tr("%1 finish"), {MouseRight}},
-                         {tr("%1 switch mode"), {KeyM}},
+                         {tr("%1 pick next point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 finish"), {{Gui::MouseInput::MouseRight}}},
+                         {tr("%1 switch mode"), {{Qt::Key_M}}},
                      }},
             });
         // clang-format on
