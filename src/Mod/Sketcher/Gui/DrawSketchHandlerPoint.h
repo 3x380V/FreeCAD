@@ -288,7 +288,7 @@ void DSHPointController::addConstraints()
 DrawSketchHandlerPoint::HintTable DrawSketchHandlerPoint::getPointHintTable()
 {
     return {// Structure: {ConstructionMethod, SelectMode, {hints...}}
-            {0, {{QObject::tr("%1 place a point"), {Gui::InputHint::UserInput::MouseLeft}}}}};
+            {0, {{QObject::tr("%1 place a point"), {{Gui::MouseInput::MouseLeft}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerPoint::lookupPointHints(int stateValue)

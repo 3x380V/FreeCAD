@@ -1222,11 +1222,12 @@ void DSHBSplineController::addConstraints()
 
 Gui::InputHint DrawSketchHandlerBSpline::switchModeHint()
 {
-    return {QObject::tr("%1 switch mode"), {Gui::InputHint::UserInput::KeyM}};
+    return {QObject::tr("%1 switch mode"), {{Qt::Key_M}}};
 }
 
 DrawSketchHandlerBSpline::HintTable DrawSketchHandlerBSpline::getBSplineHintTable()
 {
+#if 0
     const auto switchHint = switchModeHint();
     return {
         // Structure: {ConstructionMethod, SelectMode, {hints...}}
@@ -1234,23 +1235,26 @@ DrawSketchHandlerBSpline::HintTable DrawSketchHandlerBSpline::getBSplineHintTabl
         // ControlPoints method
         {ConstructionMethod::ControlPoints,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick first control point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick first control point"), {{Gui::MouseInput::MouseLeft},
+          {switchHint}}}}},
         {ConstructionMethod::ControlPoints,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick next control point"), {Gui::InputHint::UserInput::MouseLeft}},
-          {QObject::tr("%1 finish B-spline"), {Gui::InputHint::UserInput::MouseRight}},
-          switchHint}},
+         {{QObject::tr("%1 pick next control point"), {{Gui::MouseInput::MouseLeft}}},
+          {QObject::tr("%1 finish B-spline"), {{Gui::MouseInput::MouseRight},
+          {switchHint}}}}},
 
         // Knots method
         {ConstructionMethod::Knots,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick first knot"), {Gui::InputHint::UserInput::MouseLeft}}, switchHint}},
+         {{QObject::tr("%1 pick first knot"), {{Gui::MouseInput::MouseLeft}, {switchHint}}}}},
         {ConstructionMethod::Knots,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick next knot"), {Gui::InputHint::UserInput::MouseLeft}},
-          {QObject::tr("%1 finish B-spline"), {Gui::InputHint::UserInput::MouseRight}},
-          switchHint}}};
+         {{QObject::tr("%1 pick next knot"), {{Gui::MouseInput::MouseLeft}}},
+          {QObject::tr("%1 finish B-spline"), {{Gui::MouseInput::MouseRight}},
+          {switchHint}}}}};
+#endif
+    // FIXME!!!
+    return {};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerBSpline::lookupBSplineHints(ConstructionMethod method,

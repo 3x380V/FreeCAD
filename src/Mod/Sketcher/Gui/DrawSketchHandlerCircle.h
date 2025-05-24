@@ -729,11 +729,12 @@ void DSHCircleController::addConstraints()
 
 Gui::InputHint DrawSketchHandlerCircle::switchModeHint()
 {
-    return {QObject::tr("%1 switch mode"), {Gui::InputHint::UserInput::KeyM}};
+    return {QObject::tr("%1 switch mode"), {{Qt::Key_M}}};
 }
 
 DrawSketchHandlerCircle::HintTable DrawSketchHandlerCircle::getCircleHintTable()
 {
+#if 0
     const auto switchHint = switchModeHint();
     return {
         // Structure: {ConstructionMethod, SelectMode, {hints...}}
@@ -741,25 +742,28 @@ DrawSketchHandlerCircle::HintTable DrawSketchHandlerCircle::getCircleHintTable()
         // Center method
         {ConstructionMethod::Center,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick circle center"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick circle center"), {{Gui::MouseInput::MouseLeft}},
+          switchHint}}},
         {ConstructionMethod::Center,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick rim point"), {Gui::InputHint::UserInput::MouseLeft}}, switchHint}},
+         {{QObject::tr("%1 pick rim point"), {{Gui::MouseInput::MouseLeft}}, switchHint}}},
 
         // ThreeRim method
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick first rim point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick first rim point"), {{Gui::MouseInput::MouseLeft}},
+          switchHint}}},
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick second rim point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick second rim point"), {{Gui::MouseInput::MouseLeft}},
+          switchHint}}},
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekThird,
-         {{QObject::tr("%1 pick third rim point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}}};
+         {{QObject::tr("%1 pick third rim point"), {{Gui::MouseInput::MouseLeft}},
+          switchHint}}}};
+#endif
+    // FIXME!!!
+    return {};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerCircle::lookupCircleHints(ConstructionMethod method,

@@ -436,13 +436,13 @@ DrawSketchHandlerArcOfHyperbola::getArcOfHyperbolaHintTable()
 {
     return {// Structure: {mode, {hints...}}
             {STATUS_SEEK_First,
-             {{QObject::tr("%1 pick center point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick center point"), {{Gui::MouseInput::MouseLeft}}}}},
             {STATUS_SEEK_Second,
-             {{QObject::tr("%1 pick axis point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick axis point"), {{Gui::MouseInput::MouseLeft}}}}},
             {STATUS_SEEK_Third,
-             {{QObject::tr("%1 pick arc start point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick arc start point"), {{Gui::MouseInput::MouseLeft}}}}},
             {STATUS_SEEK_Fourth,
-             {{QObject::tr("%1 pick arc end point"), {Gui::InputHint::UserInput::MouseLeft}}}}};
+             {{QObject::tr("%1 pick arc end point"), {{Gui::MouseInput::MouseLeft}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerArcOfHyperbola::lookupArcOfHyperbolaHints(int mode)

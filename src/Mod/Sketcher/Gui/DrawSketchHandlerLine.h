@@ -820,11 +820,12 @@ void DSHLineController::addConstraints()
 
 Gui::InputHint DrawSketchHandlerLine::switchModeHint()
 {
-    return {QObject::tr("%1 switch mode"), {Gui::InputHint::UserInput::KeyM}};
+    return {QObject::tr("%1 switch mode"), {{Qt::Key_M}}};
 }
 
 DrawSketchHandlerLine::HintTable DrawSketchHandlerLine::getLineHintTable()
 {
+#if 0
     const auto switchHint = switchModeHint();
     return {// Structure: {constructionMethod, state, {hints...}}
 
@@ -832,37 +833,40 @@ DrawSketchHandlerLine::HintTable DrawSketchHandlerLine::getLineHintTable()
             {0,
              0,
              {// SeekFirst
-              {QObject::tr("%1 pick first point"), {Gui::InputHint::UserInput::MouseLeft}},
-              switchHint}},
+              {QObject::tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}},
+              switchHint}}},
             {0,
              1,
              {// SeekSecond
-              {QObject::tr("%1 pick second point"), {Gui::InputHint::UserInput::MouseLeft}},
-              switchHint}},
+              {QObject::tr("%1 pick second point"), {{Gui::MouseInput::MouseLeft}},
+              switchHint}}},
 
             // OnePointWidthHeight (1)
             {1,
              0,
              {// SeekFirst
-              {QObject::tr("%1 pick first point"), {Gui::InputHint::UserInput::MouseLeft}},
-              switchHint}},
+              {QObject::tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}},
+              switchHint}}},
             {1,
              1,
              {// SeekSecond
-              {QObject::tr("%1 pick second point"), {Gui::InputHint::UserInput::MouseLeft}},
-              switchHint}},
+              {QObject::tr("%1 pick second point"), {{Gui::MouseInput::MouseLeft}},
+              switchHint}}},
 
             // TwoPoints (2)
             {2,
              0,
              {// SeekFirst
-              {QObject::tr("%1 pick first point"), {Gui::InputHint::UserInput::MouseLeft}},
-              switchHint}},
+              {QObject::tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}},
+              switchHint}}},
             {2,
              1,
              {// SeekSecond
-              {QObject::tr("%1 pick second point"), {Gui::InputHint::UserInput::MouseLeft}},
-              switchHint}}};
+              {QObject::tr("%1 pick second point"), {{Gui::MouseInput::MouseLeft}},
+              switchHint}}}};
+#endif
+    // FIXME!!!
+    return {};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerLine::lookupLineHints(int method, int state)

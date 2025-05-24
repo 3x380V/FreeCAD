@@ -97,7 +97,6 @@ public:
         SNAP_MODE_45Degree
     };
 
-
     void registerPressedKey(bool pressed, int key) override
     {
         if (Mode == STATUS_SEEK_Second && key == SoKeyboardEvent::M && pressed
@@ -845,11 +844,11 @@ DrawSketchHandlerLineSet::HintTable DrawSketchHandlerLineSet::getLineSetHintTabl
 {
     return {// Structure: {mode, {hints...}}
             {STATUS_SEEK_First,
-             {{QObject::tr("%1 pick first point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}}}}},
             {STATUS_SEEK_Second,
-             {{QObject::tr("%1 pick next point"), {Gui::InputHint::UserInput::MouseLeft}},
-              {QObject::tr("%1 finish"), {Gui::InputHint::UserInput::MouseRight}},
-              {QObject::tr("%1 switch mode"), {Gui::InputHint::UserInput::KeyM}}}}};
+             {{QObject::tr("%1 pick next point"), {{Gui::MouseInput::MouseLeft}}},
+              {QObject::tr("%1 finish"), {{Gui::MouseInput::MouseRight}}},
+              {QObject::tr("%1 switch mode"), {{Qt::Key_M}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerLineSet::lookupLineSetHints(int mode)

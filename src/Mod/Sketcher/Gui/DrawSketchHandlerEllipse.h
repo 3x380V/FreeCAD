@@ -978,24 +978,24 @@ DrawSketchHandlerEllipse::HintTable DrawSketchHandlerEllipse::getEllipseHintTabl
         // Center method
         {ConstructionMethod::Center,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick ellipse center"), {Gui::InputHint::UserInput::MouseLeft}}}},
+         {{QObject::tr("%1 pick ellipse center"), {{Gui::MouseInput::MouseLeft}}}}},
         {ConstructionMethod::Center,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick axis endpoint"), {Gui::InputHint::UserInput::MouseLeft}}}},
+         {{QObject::tr("%1 pick axis endpoint"), {{Gui::MouseInput::MouseLeft}}}}},
         {ConstructionMethod::Center,
          SelectMode::SeekThird,
-         {{QObject::tr("%1 pick minor axis endpoint"), {Gui::InputHint::UserInput::MouseLeft}}}},
+         {{QObject::tr("%1 pick minor axis endpoint"), {{Gui::MouseInput::MouseLeft}}}}},
 
         // ThreeRim method
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick first rim point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+         {{QObject::tr("%1 pick first rim point"), {{Gui::MouseInput::MouseLeft}}}}},
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick second rim point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+         {{QObject::tr("%1 pick second rim point"), {{Gui::MouseInput::MouseLeft}}}}},
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekThird,
-         {{QObject::tr("%1 pick third rim point"), {Gui::InputHint::UserInput::MouseLeft}}}}};
+         {{QObject::tr("%1 pick third rim point"), {{Gui::MouseInput::MouseLeft}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerEllipse::lookupEllipseHints(ConstructionMethod method,

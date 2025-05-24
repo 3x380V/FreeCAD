@@ -696,11 +696,11 @@ DrawSketchHandlerSlot::HintTable DrawSketchHandlerSlot::getSlotHintTable()
 {
     return {// Structure: {SelectMode, {hints...}}
             {SelectMode::SeekFirst,
-             {{QObject::tr("%1 pick slot start point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick slot start point"), {{Gui::MouseInput::MouseLeft}}}}},
             {SelectMode::SeekSecond,
-             {{QObject::tr("%1 pick slot end point"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick slot end point"), {{Gui::MouseInput::MouseLeft}}}}},
             {SelectMode::SeekThird,
-             {{QObject::tr("%1 set slot radius"), {Gui::InputHint::UserInput::MouseMove}}}}};
+             {{QObject::tr("%1 set slot radius"), {{Gui::MouseInput::MouseMove}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerSlot::lookupSlotHints(SelectMode state)

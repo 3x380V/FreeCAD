@@ -2696,86 +2696,90 @@ void DSHRectangleController::doConstructionMethodChanged()
 
 Gui::InputHint DrawSketchHandlerRectangle::switchModeHint()
 {
-    return {QObject::tr("%1 switch mode"), {Gui::InputHint::UserInput::KeyM}};
+    return {QObject::tr("%1 switch mode"), {{Qt::Key_M}}};
 }
 
 DrawSketchHandlerRectangle::HintTable DrawSketchHandlerRectangle::getRectangleHintTable()
 {
+#if 0
     const auto switchHint = switchModeHint();
     return {// Structure: {ConstructionMethod, SelectMode, {hints...}}
 
             // Diagonal method
             {ConstructionMethods::RectangleConstructionMethod::Diagonal,
              SelectMode::SeekFirst,
-             {{QObject::tr("%1 pick first corner"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick first corner"), {{Gui::MouseInput::MouseLeft}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::Diagonal,
              SelectMode::SeekSecond,
-             {{QObject::tr("%1 pick opposite corner"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick opposite corner"), {{Gui::MouseInput::MouseLeft}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::Diagonal,
              SelectMode::SeekThird,
              {{QObject::tr("%1 set corner radius or frame thickness"),
-               {Gui::InputHint::UserInput::MouseMove}},
+               {Gui::MouseInput::MouseMove}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::Diagonal,
              SelectMode::SeekFourth,
-             {{QObject::tr("%1 set frame thickness"), {Gui::InputHint::UserInput::MouseMove}},
+             {{QObject::tr("%1 set frame thickness"), {{Gui::MouseInput::MouseMove}}},
               switchHint}},
 
             // CenterAndCorner method
             {ConstructionMethods::RectangleConstructionMethod::CenterAndCorner,
              SelectMode::SeekFirst,
-             {{QObject::tr("%1 pick center"), {Gui::InputHint::UserInput::MouseLeft}}, switchHint}},
+             {{QObject::tr("%1 pick center"), {{Gui::MouseInput::MouseLeft}}}, switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::CenterAndCorner,
              SelectMode::SeekSecond,
-             {{QObject::tr("%1 pick corner"), {Gui::InputHint::UserInput::MouseLeft}}, switchHint}},
+             {{QObject::tr("%1 pick corner"), {{Gui::MouseInput::MouseLeft}}}, switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::CenterAndCorner,
              SelectMode::SeekThird,
              {{QObject::tr("%1 set corner radius or frame thickness"),
-               {Gui::InputHint::UserInput::MouseMove}},
+               {{Gui::MouseInput::MouseMove}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::CenterAndCorner,
              SelectMode::SeekFourth,
-             {{QObject::tr("%1 set frame thickness"), {Gui::InputHint::UserInput::MouseMove}},
+             {{QObject::tr("%1 set frame thickness"), {{Gui::MouseInput::MouseMove}}},
               switchHint}},
 
             // ThreePoints method
             {ConstructionMethods::RectangleConstructionMethod::ThreePoints,
              SelectMode::SeekFirst,
-             {{QObject::tr("%1 pick first corner"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick first corner"), {{Gui::MouseInput::MouseLeft}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::ThreePoints,
              SelectMode::SeekSecond,
-             {{QObject::tr("%1 pick second corner"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick second corner"), {{Gui::MouseInput::MouseLeft}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::ThreePoints,
              SelectMode::SeekThird,
-             {{QObject::tr("%1 pick third corner"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick third corner"), {{Gui::MouseInput::MouseLeft}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::ThreePoints,
              SelectMode::SeekFourth,
              {{QObject::tr("%1 set corner radius or frame thickness"),
-               {Gui::InputHint::UserInput::MouseMove}},
+               {{Gui::MouseInput::MouseMove}}},
               switchHint}},
 
             // CenterAnd3Points method
             {ConstructionMethods::RectangleConstructionMethod::CenterAnd3Points,
              SelectMode::SeekFirst,
-             {{QObject::tr("%1 pick center"), {Gui::InputHint::UserInput::MouseLeft}}, switchHint}},
+             {{QObject::tr("%1 pick center"), {{Gui::MouseInput::MouseLeft}}}, switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::CenterAnd3Points,
              SelectMode::SeekSecond,
-             {{QObject::tr("%1 pick first corner"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick first corner"), {{Gui::MouseInput::MouseLeft}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::CenterAnd3Points,
              SelectMode::SeekThird,
-             {{QObject::tr("%1 pick second corner"), {Gui::InputHint::UserInput::MouseLeft}},
+             {{QObject::tr("%1 pick second corner"), {{Gui::MouseInput::MouseLeft}}},
               switchHint}},
             {ConstructionMethods::RectangleConstructionMethod::CenterAnd3Points,
              SelectMode::SeekFourth,
              {{QObject::tr("%1 set corner radius or frame thickness"),
-               {Gui::InputHint::UserInput::MouseMove}},
+               {{Gui::MouseInput::MouseMove}}},
               switchHint}}};
+#endif
+    // FIXME!!!
+    return {};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerRectangle::lookupRectangleHints(

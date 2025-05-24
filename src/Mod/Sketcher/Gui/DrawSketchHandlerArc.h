@@ -920,11 +920,12 @@ void DSHArcController::doConstructionMethodChanged()
 // Static member definitions
 Gui::InputHint DrawSketchHandlerArc::switchModeHint()
 {
-    return {QObject::tr("%1 switch mode"), {Gui::InputHint::UserInput::KeyM}};
+    return {QObject::tr("%1 switch mode"), {{Qt::Key_M}}};
 }
 
 DrawSketchHandlerArc::HintTable DrawSketchHandlerArc::getArcHintTable()
 {
+#if 0
     const auto switchHint = switchModeHint();
     return {
         // Structure: {ConstructionMethod, SelectMode, {hints...}}
@@ -932,29 +933,27 @@ DrawSketchHandlerArc::HintTable DrawSketchHandlerArc::getArcHintTable()
         // Center method
         {ConstructionMethod::Center,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick arc center"), {Gui::InputHint::UserInput::MouseLeft}}, switchHint}},
+         {{QObject::tr("%1 pick arc center"), {{Gui::MouseInput::MouseLeft, switchHint}}}}},
         {ConstructionMethod::Center,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick arc start point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick arc start point"), {{Gui::MouseInput::MouseLeft, switchHint}}}}},
         {ConstructionMethod::Center,
          SelectMode::SeekThird,
-         {{QObject::tr("%1 pick arc end point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick arc end point"), {{Gui::MouseInput::MouseLeft, switchHint}}}}},
 
         // ThreeRim method
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekFirst,
-         {{QObject::tr("%1 pick first arc point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick first arc point"), {{Gui::MouseInput::MouseLeft, switchHint}}}}},
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekSecond,
-         {{QObject::tr("%1 pick second arc point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}},
+         {{QObject::tr("%1 pick second arc point"), {{Gui::MouseInput::MouseLeft, switchHint}}}}},
         {ConstructionMethod::ThreeRim,
          SelectMode::SeekThird,
-         {{QObject::tr("%1 pick third arc point"), {Gui::InputHint::UserInput::MouseLeft}},
-          switchHint}}};
+         {{QObject::tr("%1 pick third arc point"), {{Gui::MouseInput::MouseLeft, switchHint}}}}}};
+#endif
+    // FIXME!!!
+    return {};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerArc::lookupArcHints(ConstructionMethod method,

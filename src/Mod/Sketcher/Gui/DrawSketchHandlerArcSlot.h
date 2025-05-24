@@ -960,13 +960,13 @@ DrawSketchHandlerArcSlot::HintTable DrawSketchHandlerArcSlot::getArcSlotHintTabl
 {
     return {// Structure: {SelectMode, {hints...}}
             {SelectMode::SeekFirst,
-             {{QObject::tr("%1 pick slot center"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick slot center"), {{Gui::MouseInput::MouseLeft}}}}},
             {SelectMode::SeekSecond,
-             {{QObject::tr("%1 pick slot radius"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick slot radius"), {{Gui::MouseInput::MouseLeft}}}}},
             {SelectMode::SeekThird,
-             {{QObject::tr("%1 pick slot angle"), {Gui::InputHint::UserInput::MouseLeft}}}},
+             {{QObject::tr("%1 pick slot angle"), {{Gui::MouseInput::MouseLeft}}}}},
             {SelectMode::SeekFourth,
-             {{QObject::tr("%1 pick slot width"), {Gui::InputHint::UserInput::MouseLeft}}}}};
+             {{QObject::tr("%1 pick slot width"), {{Gui::MouseInput::MouseLeft}}}}}};
 }
 
 std::list<Gui::InputHint> DrawSketchHandlerArcSlot::lookupArcSlotHints(SelectMode state)
