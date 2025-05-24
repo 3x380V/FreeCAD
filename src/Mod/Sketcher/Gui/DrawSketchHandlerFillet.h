@@ -412,19 +412,17 @@ private:
 public:
     std::list<Gui::InputHint> getToolHints() const override
     {
-        using enum Gui::InputHint::UserInput;
-
         return Gui::lookupHints<SelectMode>(
             state(),
             {
                 {.state = SelectMode::SeekFirst,
                  .hints = {{tr("%1 pick first edge or point", "Sketcher Fillet/Chamfer: hint"),
-                            {MouseLeft}}}},
+                            {{Gui::MouseInput::MouseLeft}}}}},
                 {.state = SelectMode::SeekSecond,
                  .hints = {{tr("%1 pick second edge", "Sketcher Fillet/Chamfer: hint"),
-                            {MouseLeft}}}},
+                            {{Gui::MouseInput::MouseLeft}}}}},
                 {.state = SelectMode::End,
-                 .hints = {{tr("%1 create fillet", "Sketcher Fillet/Chamfer: hint"), {MouseLeft}}}},
+                 .hints = {{tr("%1 create fillet", "Sketcher Fillet/Chamfer: hint"), {{Gui::MouseInput::MouseLeft}}}}},
             });
     }
 };
