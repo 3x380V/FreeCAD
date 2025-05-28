@@ -581,6 +581,8 @@ SET(Part_SRCS
     PhysicalExtension.cpp
     PhysicalExtension.h
     PreCompiled.h
+    ProgressIndicator.cpp
+    ProgressIndicator.h
     Services.cpp
     Services.h
     SignalException.cpp
