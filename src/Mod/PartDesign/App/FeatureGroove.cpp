@@ -382,7 +382,5 @@ void Groove::updateProperties(RevolMethod method)
     UpToFace.setReadOnly(!isUpToFaceEnabled);
 }
 
-
 }
-
 

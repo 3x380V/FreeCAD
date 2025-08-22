@@ -2769,4 +2769,3 @@ int Hole::baseProfileOption_bitmaskToIdx(int bitmask)
 
 } // namespace PartDesign
 
-

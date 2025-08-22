@@ -300,4 +300,3 @@ App::DocumentObjectExecReturn *Draft::execute()
     }
 }
 
-

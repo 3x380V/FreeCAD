@@ -441,4 +441,3 @@ TopoDS_Shape Transformed::getRemainingSolids(const TopoDS_Shape& shape)
 
 }  // namespace PartDesign
 
-
