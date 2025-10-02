@@ -443,17 +443,18 @@ private:
 public:
     std::list<Gui::InputHint> getToolHints() const override
     {
+        using enum Gui::InputHint::UserInput;
+
         return Gui::lookupHints<SelectMode>(
             state(),
             {{.state = SelectMode::SeekFirst,
-              .hints = {{tr("%1 pick reference point", "Sketcher Translate: hint"),
-                         {{Gui::MouseInput::MouseLeft}}}}},
+              .hints = {{tr("%1 pick reference point", "Sketcher Translate: hint"), {MouseLeft}}}},
              {.state = SelectMode::SeekSecond,
               .hints = {{tr("%1 set translation vector", "Sketcher Translate: hint"),
-                         {{Gui::MouseInput::MouseLeft}}}}},
+                         {MouseLeft}}}},
              {.state = SelectMode::SeekThird,
               .hints = {{tr("%1 set second translation vector", "Sketcher Translate: hint"),
-                         {{Gui::MouseInput::MouseLeft}}}}}});
+                         {MouseLeft}}}}});
     }
 };
 
