@@ -221,7 +221,7 @@ public:
     {
         return {
             {tr("%1 pick edge to trim", "Sketcher Trimming: hint"),
-             {{Gui::MouseInput::MouseLeft}}},
+             {Gui::InputHint::UserInput::MouseLeft}},
         };
     }
 };
