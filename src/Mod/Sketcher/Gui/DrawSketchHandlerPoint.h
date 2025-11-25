@@ -70,8 +70,9 @@ public:
 private:
     std::list<Gui::InputHint> getToolHints() const override
     {
+        using enum Gui::InputHint::UserInput;
         return {
-            {tr("%1 place a point", "Sketcher Point: hint"), {{Gui::MouseInput::MouseLeft}}},
+            {tr("%1 place a point", "Sketcher Point: hint"), {MouseLeft}},
         };
     }
 

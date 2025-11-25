@@ -261,7 +261,7 @@ public:
     {
         return {
             {tr("%1 pick external geometry", "Sketcher External: hint"),
-             {{Gui::MouseInput::MouseLeft}}},
+             {Gui::InputHint::UserInput::MouseLeft}},
         };
     }
 };

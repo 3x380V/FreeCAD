@@ -212,7 +212,7 @@ public:
     {
         return {
             {tr("%1 pick location on edge to split", "Sketcher Splitting: hint"),
-             {{Gui::MouseInput::MouseLeft}}},
+             {Gui::InputHint::UserInput::MouseLeft}},
         };
     }
 };

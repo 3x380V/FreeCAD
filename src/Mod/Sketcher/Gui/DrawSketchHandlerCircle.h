@@ -85,8 +85,9 @@ private:
     std::list<Gui::InputHint> getToolHints() const override
     {
         using State = std::pair<ConstructionMethod, SelectMode>;
+        using enum Gui::InputHint::UserInput;
 
-        const Gui::InputHint switchModeHint = {tr("%1 switch mode"), {{Qt::Key_M}}};
+        const Gui::InputHint switchModeHint = {tr("%1 switch mode"), {KeyM}};
 
         return Gui::lookupHints<State>(
             {constructionMethod(), state()},
@@ -95,13 +96,13 @@ private:
                 {.state = {ConstructionMethod::Center, SelectMode::SeekFirst},
                  .hints =
                      {
-                         {tr("%1 pick circle center"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick circle center"), {MouseLeft}},
                          switchModeHint,
                      }},
                 {.state = {ConstructionMethod::Center, SelectMode::SeekSecond},
                  .hints =
                      {
-                         {tr("%1 pick rim point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick rim point"), {MouseLeft}},
                          switchModeHint,
                      }},
 
@@ -109,19 +110,19 @@ private:
                 {.state = {ConstructionMethod::ThreeRim, SelectMode::SeekFirst},
                  .hints =
                      {
-                         {tr("%1 pick first rim point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick first rim point"), {MouseLeft}},
                          switchModeHint,
                      }},
                 {.state = {ConstructionMethod::ThreeRim, SelectMode::SeekSecond},
                  .hints =
                      {
-                         {tr("%1 pick second rim point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick second rim point"), {MouseLeft}},
                          switchModeHint,
                      }},
                 {.state = {ConstructionMethod::ThreeRim, SelectMode::SeekThird},
                  .hints =
                      {
-                         {tr("%1 pick third rim point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick third rim point"), {MouseLeft}},
                          switchModeHint,
                      }},
             });
