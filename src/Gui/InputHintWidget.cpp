@@ -31,45 +31,53 @@
 #include "InputHint.h"
 #include "InputHintWidget.h"
 
-using namespace Gui;
-using Input = InputHint::UserInput;
+using Hint = Gui::InputHint::UserInput;
 
 // clang-format off
-static constexpr std::array<std::tuple<Input, std::string_view>, 7> iconPath {{
-    {MouseInput::MouseLeft, ":/icons/user-input/mouse-left.svg"},
-    {MouseInput::MouseRight, ":/icons/user-input/mouse-right.svg"},
-    {MouseInput::MouseMove, ":/icons/user-input/mouse-move.svg"},
-    {MouseInput::MouseMiddle, ":/icons/user-input/mouse-middle.svg"},
-    {MouseInput::MouseScroll, ":/icons/user-input/mouse-scroll.svg"},
-    {MouseInput::MouseScrollDown, ":/icons/user-input/mouse-scroll-down.svg"},
-    {MouseInput::MouseScrollUp, ":/icons/user-input/mouse-scroll-up.svg"},
+static constexpr std::array<std::tuple<Hint, std::string_view>, 7> iconPath {{
+    {Hint::MouseLeft, ":/icons/user-input/mouse-left.svg"},
+    {Hint::MouseRight, ":/icons/user-input/mouse-right.svg"},
+    {Hint::MouseMove, ":/icons/user-input/mouse-move.svg"},
+    {Hint::MouseMiddle, ":/icons/user-input/mouse-middle.svg"},
+    {Hint::MouseScroll, ":/icons/user-input/mouse-scroll.svg"},
+    {Hint::MouseScrollDown, ":/icons/user-input/mouse-scroll-down.svg"},
+    {Hint::MouseScrollUp, ":/icons/user-input/mouse-scroll-up.svg"},
 }};
 
-static std::array<std::tuple<Input, QString>, 12> userInputStr {{
-    {Qt::Key_NumberSign, QStringLiteral("-/+")},
-    {Qt::Key_Tab, Gui::InputHintWidget::tr("tab ⭾")},
-    {Qt::Key_Backspace, Gui::InputHintWidget::tr("⌫")},
-    {Qt::Key_Return, Gui::InputHintWidget::tr("↵ Enter")},
-    {Qt::Key_Left, QStringLiteral("←")},
-    {Qt::Key_Up, QStringLiteral("↑")},
-    {Qt::Key_Right, QStringLiteral("→")},
-    {Qt::Key_Down, QStringLiteral("↓")},
+static std::array<std::tuple<Hint, QString>, 12> userInputStr {{
+    {Hint::KeyNumberSign, QStringLiteral("-/+")},
+    {Hint::KeyTab, Gui::InputHintWidget::tr("tab ⭾")},
+    {Hint::KeyBackspace, Gui::InputHintWidget::tr("⌫")},
+    {Hint::KeyReturn, Gui::InputHintWidget::tr("↵ Enter")},
+    {Hint::KeyLeft, QStringLiteral("←")},
+    {Hint::KeyUp, QStringLiteral("↑")},
+    {Hint::KeyRight, QStringLiteral("→")},
+    {Hint::KeyDown, QStringLiteral("↓")},
 #if defined (FC_OS_MACOSX)
-    {Qt::Key_Shift, QStringLiteral("⇧")},
-    {Qt::Key_Control, QStringLiteral("⇧")},
-    {Qt::Key_Meta, QStringLiteral("⌃")},
-    {Qt::Key_Alt, QStringLiteral("⌥")},
+    {Hint::KeyShift, QStringLiteral("⇧")},
+    {Hint::KeyControl, QStringLiteral("⇧")},
+    {Hint::KeyMeta, QStringLiteral("⌃")},
+    {Hint::KeyAlt, QStringLiteral("⌥")},
+#elif defined(FC_OS_WIN32)
+    {Hint::KeyMeta, Gui::InputHintWidget::tr("⊞ Win")},
 #else
-    {Qt::Key_Shift, Gui::InputHintWidget::tr("Shift")},
-    {Qt::Key_Control, Gui::InputHintWidget::tr("Ctrl")},
-    {Qt::Key_Alt, Gui::InputHintWidget::tr("Alt")},
-#if defined(FC_OS_WIN32)
-    {Qt::Key_Meta, Gui::InputHintWidget::tr("⊞ Win")},
-#else
-    {Qt::Key_Meta, Gui::InputHintWidget::tr("❖ Meta")},
-#endif
+    {Hint::KeyMeta, Gui::InputHintWidget::tr("❖ Meta")},
 #endif
 }};
+
+static constexpr std::array excludeHints {
+    Hint::ModifierShift,
+    Hint::ModifierCtrl,
+    Hint::ModifierAlt,
+    Hint::ModifierMeta,
+    Hint::MouseMove,
+    Hint::MouseLeft,
+    Hint::MouseRight,
+    Hint::MouseMiddle,
+    Hint::MouseScroll,
+    Hint::MouseScrollUp,
+    Hint::MouseScrollDown,
+};
 // clang-format on
 
 Gui::InputHintWidget::InputHintWidget(QWidget* parent)
@@ -203,17 +211,15 @@ QString Gui::InputHintWidget::inputRepresentation(const InputHint::UserInput key
         return std::get<1>(*it);
     }
 
-    if (auto qtkey = std::get_if<Qt::Key>(&key)) {
-        // Generic user input
-        QKeySequence ks(static_cast<int>(*qtkey));
-        return ks.toString(QKeySequence::NativeText);
+    // Disallowed user input
+    auto jt = std::find_if(excludeHints.begin(), excludeHints.end(), [key](const auto& hint) {
+        return hint == key;
+    });
+    if (jt != excludeHints.end()) {
+        return tr("???");
     }
 
-    if (auto qtkey = std::get_if<Qt::KeyboardModifier>(&key)) {
-        // Generic user input
-        QKeySequence ks(static_cast<int>(*qtkey));
-        return ks.toString(QKeySequence::NativeText);
-    }
-
-    return tr("???");
+    // Generic user input
+    QKeySequence ks(static_cast<int>(key));
+    return ks.toString(QKeySequence::NativeText);
 }
