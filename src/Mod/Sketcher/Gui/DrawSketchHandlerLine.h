@@ -276,8 +276,9 @@ private:
     std::list<Gui::InputHint> getToolHints() const override
     {
         using State = std::pair<ConstructionMethod, SelectMode>;
+        using enum Gui::InputHint::UserInput;
 
-        const Gui::InputHint switchModeHint {tr("%1 switch mode"), {{Qt::Key_M}}};
+        const Gui::InputHint switchModeHint {tr("%1 switch mode"), {KeyM}};
 
         return Gui::lookupHints<State>(
             {constructionMethod(), state()},
@@ -286,13 +287,13 @@ private:
                 {.state = {ConstructionMethod::OnePointLengthAngle, SelectMode::SeekFirst},
                  .hints =
                      {
-                         {tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick first point"), {MouseLeft}},
                          switchModeHint,
                      }},
                 {.state = {ConstructionMethod::OnePointLengthAngle, SelectMode::SeekSecond},
                  .hints =
                      {
-                         {tr("%1 pick second point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick second point"), {MouseLeft}},
                          switchModeHint,
                      }},
 
@@ -300,13 +301,13 @@ private:
                 {.state = {ConstructionMethod::OnePointWidthHeight, SelectMode::SeekFirst},
                  .hints =
                      {
-                         {tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick first point"), {MouseLeft}},
                          switchModeHint,
                      }},
                 {.state = {ConstructionMethod::OnePointWidthHeight, SelectMode::SeekSecond},
                  .hints =
                      {
-                         {tr("%1 pick second point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick second point"), {MouseLeft}},
                          switchModeHint,
                      }},
 
@@ -314,13 +315,13 @@ private:
                 {.state = {ConstructionMethod::TwoPoints, SelectMode::SeekFirst},
                  .hints =
                      {
-                         {tr("%1 pick first point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick first point"), {MouseLeft}},
                          switchModeHint,
                      }},
                 {.state = {ConstructionMethod::TwoPoints, SelectMode::SeekSecond},
                  .hints =
                      {
-                         {tr("%1 pick second point"), {{Gui::MouseInput::MouseLeft}}},
+                         {tr("%1 pick second point"), {MouseLeft}},
                          switchModeHint,
                      }},
             });
