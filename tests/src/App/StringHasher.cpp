@@ -1132,12 +1132,9 @@ protected:
 
     static Data::MappedName givenMappedName(const char* name, const char* postfix = nullptr)
     {
-        QByteArray expectedPrefix {name, static_cast<int>(std::strlen(name))};
-        Data::MappedName mappedName(expectedPrefix);
+        Data::MappedName mappedName(name);
         if (postfix) {
-            QByteArray expectedPostfix {postfix, static_cast<int>(std::strlen(postfix))};
-            Data::MappedName mappedNameA(mappedName, expectedPostfix.data());
-            return mappedNameA;
+            return Data::MappedName(mappedName, postfix);
         }
         return mappedName;
     }
@@ -1380,7 +1377,7 @@ TEST_F(StringHasherTest, getIDFromMappedNameWithoutPostfixWithoutIndex)  // NOLI
     // Arrange
     const char* name {"Face"};
     QByteArray expectedPrefix {name, static_cast<int>(std::strlen(name))};
-    Data::MappedName mappedName1(expectedPrefix);
+    Data::MappedName mappedName1(name);
     std::vector<App::StringIDRef> sids;
 
     // Act
@@ -1396,8 +1393,7 @@ TEST_F(StringHasherTest, getIDFromMappedNameWithoutPostfixWithIndex)  // NOLINT
     const char* expectedName {"Face"};
     QByteArray expectedPrefix {expectedName, static_cast<int>(std::strlen(expectedName))};
     const char* name {"Face3"};
-    QByteArray prefix {name, static_cast<int>(std::strlen(name))};
-    Data::MappedName mappedName1(prefix);
+    Data::MappedName mappedName1(name);
     std::vector<App::StringIDRef> sids;
 
     // Act
@@ -1414,8 +1410,8 @@ TEST_F(StringHasherTest, getIDFromMappedNameWithoutIndexWithPostfix)  // NOLINT
     QByteArray expectedPrefix {name, static_cast<int>(std::strlen(name))};
     const char* postfix {";:M;FUS;:Hb:7,F"};
     QByteArray expectedPostfix {postfix, static_cast<int>(std::strlen(postfix))};
-    Data::MappedName mappedName1(expectedPrefix);
-    Data::MappedName mappedName2(mappedName1, expectedPostfix.data());
+    Data::MappedName mappedName1(name);
+    Data::MappedName mappedName2(mappedName1, postfix);
     std::vector<App::StringIDRef> sids;
 
     // Act
@@ -1433,8 +1429,8 @@ TEST_F(StringHasherTest, getIDFromMappedNameWithIndexWithPostfix)  // NOLINT
     QByteArray expectedPrefix {name, static_cast<int>(std::strlen(name))};
     const char* postfix {";:M;FUS;:Hb:7,F"};
     QByteArray expectedPostfix {postfix, static_cast<int>(std::strlen(postfix))};
-    Data::MappedName mappedName1(expectedPrefix);
-    Data::MappedName mappedName2(mappedName1, expectedPostfix.data());
+    Data::MappedName mappedName1(name);
+    Data::MappedName mappedName2(mappedName1, postfix);
     std::vector<App::StringIDRef> sids;
 
     // Act
