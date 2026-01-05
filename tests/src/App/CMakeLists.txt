@@ -12,7 +12,7 @@ add_executable(App_tests_run
         DocumentObserver.cpp
         Expression.cpp
         ExpressionParser.cpp
-        QuantityInput.cpp
+        ExpressionTokenizer.cpp
         ElementMap.cpp
         ElementNamingUtils.cpp
         IndexedName.cpp
@@ -27,6 +27,7 @@ add_executable(App_tests_run
         Property.cpp
         PropertyExpressionEngine.cpp
         ProgramInformation.cpp
+        QuantityInput.cpp
         StringHasher.cpp
         VarSet.cpp
         VRMLObject.cpp
