@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <string>
 #include <boost/core/ignore_unused.hpp>
 
 #include <App/Application.h>
@@ -306,7 +307,11 @@ TEST_F(ComplexGeoDataTest, elementTypeCharMappedNameNoPrefix)  // NOLINT
     std::tie(indexedName, mappedName) = createMappedName("TestMappedName:;");
 
     // Act
-    char elementType = cgd().elementType(mappedName.toConstString(0, size));
+    // toConstString yields a pointer plus a length and is not NUL-terminated,
+    // so materialise a C string before calling the const char* overload.
+    const char* nameChars = mappedName.toConstString(0, size);
+    const std::string nameString(nameChars, static_cast<std::size_t>(size));
+    char elementType = cgd().elementType(nameString.c_str());
 
     // Assert
     EXPECT_EQ(elementType, 'E');
@@ -323,7 +328,11 @@ TEST_F(ComplexGeoDataTest, elementTypeCharMappedNameWithPrefix)  // NOLINT
     std::tie(indexedName, mappedName) = createMappedName(name);
 
     // Act
-    char elementType = cgd().elementType(mappedName.toConstString(0, size));
+    // toConstString yields a pointer plus a length and is not NUL-terminated,
+    // so materialise a C string before calling the const char* overload.
+    const char* nameChars = mappedName.toConstString(0, size);
+    const std::string nameString(nameChars, static_cast<std::size_t>(size));
+    char elementType = cgd().elementType(nameString.c_str());
 
     // Assert
     EXPECT_EQ(elementType, 'E');
