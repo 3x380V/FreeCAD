@@ -332,12 +332,7 @@ void Translator::setLocale(const std::string& language) const
         }
     }
     QLocale::setDefault(loc);
-    if (isCLocale) {
-        Base::Tools::setIcuDefaultLocale("C");
-    }
-    else {
-        Base::Tools::setIcuDefaultLocale(loc.name().toStdString());
-    }
+    Base::Tools::setIcuDefaultLocale(isCLocale ? "C" : loc.name().toStdString());
     updateLocaleChange();
 
 #ifdef FC_DEBUG

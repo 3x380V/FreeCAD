@@ -21,6 +21,7 @@
  *                                                                      *
  ************************************************************************/
 
+#include <algorithm>
 #include <iomanip>
 #include <limits>
 #include <memory>
@@ -85,17 +86,14 @@ std::string formatNumberIcu(const double value, const Base::QuantityFormat& form
             nf->setMinimumFractionDigits(precision);
             nf->setMaximumFractionDigits(precision);
             break;
-        case Base::QuantityFormat::Scientific: {
+        case Base::QuantityFormat::Scientific:
             if (auto* df = dynamic_cast<icu::DecimalFormat*>(nf.get())) {
                 df->setScientificNotation(true);
                 df->setMinimumFractionDigits(precision);
                 df->setMaximumFractionDigits(precision);
+                break;
             }
-            else {
-                nf->setMaximumFractionDigits(precision);
-            }
-            break;
-        }
+            [[fallthrough]];
         case Base::QuantityFormat::Default:
         default:
             nf->setMaximumFractionDigits(precision);
@@ -170,14 +168,7 @@ std::string UnitsSchema::toLocale(const Quantity& quant, const double factor, co
 {
     const QuantityFormat& format = quant.getFormat();
     const double v = quant.getValue() / factor;
-
-    std::string valueString;
-    if (std::isfinite(v)) {
-        valueString = formatNumberIcu(v, format);
-    }
-    else {
-        valueString = std::to_string(v);
-    }
+    const std::string valueString = std::isfinite(v) ? formatNumberIcu(v, format) : std::to_string(v);
 
     auto notUnit = [](auto s) {
         return s.empty() || s == "°" || s == "″" || s == "′" || s == "\"" || s == "'";
