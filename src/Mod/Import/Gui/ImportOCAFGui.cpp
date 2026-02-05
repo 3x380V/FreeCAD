@@ -54,12 +54,12 @@ void ImportOCAFGui::applyFaceColors(Part::Feature* part, const std::vector<Base:
         vp->ShapeAppearance.setDiffuseColors(colors);
         std::vector<float> transp;
         transp.reserve(colors.size());
-        std::transform(colors.cbegin(),
-                       colors.cend(),
-                       std::back_inserter(transp),
-                       [](const Base::Color& col) {
-                           return col.transparency();
-                       });
+        std::transform(
+            colors.cbegin(),
+            colors.cend(),
+            std::back_inserter(transp),
+            [](const Base::Color& col) { return col.transparency(); }
+        );
         vp->ShapeAppearance.setTransparencies(transp);
     }
 }
