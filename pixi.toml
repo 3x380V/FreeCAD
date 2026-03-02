@@ -72,9 +72,11 @@ compiler-rt = ">=18.1.8,<22"
 
 ## Linux Dependencies (x86-64)
 [target.linux-64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 clang = "*"
 clangxx = "*"
 cpptrace = { version = "1.0.4.*", build = "libunwind_*" }
+flex = "*"
 kernel-headers_linux-64 = "*"
 libdrm-cos7-x86_64 = "*"
 libopengl-devel = "*"
@@ -110,9 +112,11 @@ xorg-xproto = "*"
 
 ## Linux Dependencies (aarch64)
 [target.linux-aarch64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 clang = "*"
 clangxx = "*"
 cpptrace = { version = "1.0.4.*", build = "libunwind_*" }
+flex = "*"
 kernel-headers_linux-aarch64 = "*"
 libdrm-cos7-aarch64 = "*"
 libglvnd-cos7-aarch64 = "*"
@@ -152,17 +156,22 @@ xorg-xproto = "*"
 
 ## macOS Dependencies (Intel)
 [target.osx-64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 cpptrace = "*"
+flex = "*"
 sed = "*"
 
 ## macOS Dependencies (Apple Silicon)
 [target.osx-arm64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 cpptrace = "*"
+flex = "*"
 sed = "*"
 
 [target.win-64.dependencies]
 cpptrace = "*"
 pthreads-win32 = "*"
+winflexbison = ">=2.5.23"  ## first version bundling bison >= 3.6
 
 [pypi-dependencies]
 freecad-stubs = "*"
