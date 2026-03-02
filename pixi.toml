@@ -78,10 +78,12 @@ blas = { version = "*", build = "openblas*" }
 
 ## Linux Dependencies (x86-64)
 [target.linux-64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 compilers = ">=1.10,<1.11"
 clang = "*"
 clangxx = "*"
 cpptrace = { version = "1.0.4.*", build = "libunwind_*" }
+flex = "*"
 kernel-headers_linux-64 = "*"
 libdrm-cos7-x86_64 = "*"
 libopengl-devel = "*"
@@ -117,10 +119,12 @@ xorg-xproto = "*"
 
 ## Linux Dependencies (aarch64)
 [target.linux-aarch64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 compilers = ">=1.10,<1.11"
 clang = "*"
 clangxx = "*"
 cpptrace = { version = "1.0.4.*", build = "libunwind_*" }
+flex = "*"
 kernel-headers_linux-aarch64 = "*"
 libdrm-cos7-aarch64 = "*"
 libglvnd-cos7-aarch64 = "*"
@@ -160,6 +164,7 @@ xorg-xproto = "*"
 
 ## macOS Dependencies (Intel)
 [target.osx-64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 ## Under C++20 and later, clang <23 reports __has_feature(modules), which makes
 ## the macOS 27 SDK's <math.h> take INFINITY/NAN from <float.h> through the
 ## __need_infinity_nan protocol. Clang <22 does not implement it (INFINITY is
@@ -170,10 +175,12 @@ clang_osx-64 = "23.*"
 clangxx_osx-64 = "23.*"
 compiler-rt = "23.*"
 cpptrace = "*"
+flex = "*"
 sed = "*"
 
 ## macOS Dependencies (Apple Silicon)
 [target.osx-arm64.dependencies]
+bison = ">=3.6"  ## required for -Wcounterexamples flag
 ## Under C++20 and later, clang <23 reports __has_feature(modules), which makes
 ## the macOS 27 SDK's <math.h> take INFINITY/NAN from <float.h> through the
 ## __need_infinity_nan protocol. Clang <22 does not implement it (INFINITY is
@@ -184,11 +191,13 @@ clang_osx-arm64 = "23.*"
 clangxx_osx-arm64 = "23.*"
 compiler-rt = "23.*"
 cpptrace = "*"
+flex = "*"
 sed = "*"
 
 [target.win-64.dependencies]
 compilers = ">=1.10,<1.11"
 cpptrace = "*"
+winflexbison = ">=2.5.23"  ## first version bundling bison >= 3.6
 ## pthreads-win32 dropped: libwinpthread >=12, pulled in by the smesh build
 ## against occt 8.0, declares "constrains: pthreads-win32 <0.0a0".
 ## smesh's installed headers need pthread.h: Kernel/utilities.h, reached from
