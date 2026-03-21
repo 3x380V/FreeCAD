@@ -521,7 +521,6 @@ void QuantitySpinBox::updateEdit(const QString& text)
 
     QLineEdit* edit = lineEdit();
 
-    bool empty = edit->text().isEmpty();
     int cursor = edit->cursorPosition();
     int selsize = edit->selectedText().size();
 
