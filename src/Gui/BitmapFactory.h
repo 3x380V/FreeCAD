@@ -66,9 +66,15 @@ public:
     /// Returns the absolute file names of icons found in the given search paths
     QStringList findIconFiles() const;
     /// Adds a build in XPM pixmap under a given name
+    void addXPM(const char* name, const char** pXPM);
+    /// Adds a build in XPM pixmap under a given name
     void addPixmapToCache(const char* name, const QPixmap& icon);
     /// Checks whether the pixmap is already registered.
     bool findPixmapInCache(const char* name, QPixmap& icon) const;
+    /// Clears the resolved pixmap cache
+    void clearCache();
+    /// Reloads external theme settings from preferences/environment
+    void reloadExternalThemeSettings();
     /** Returns the QIcon corresponding to name in the current icon theme.
      * If no such icon is found in the current theme fallback is returned instead.
      */
@@ -88,6 +94,18 @@ public:
     QPixmap pixmapFromSvg(
         const char* name,
         const QSizeF& size,
+        const ColorMap& colorMapping = ColorMap()
+    ) const;
+    /** Retrieves a pixmap by name and size created by an
+     * scalable vector graphics (SVG) and a device pixel ratio
+     *
+     * @param colorMapping - a dictionary of substitute colors.
+     * Can be used to customize icon color scheme, e.g. crosshair color
+     */
+    QPixmap pixmapFromSvg(
+        const char* name,
+        const QSizeF& size,
+        qreal dpr,
         const ColorMap& colorMapping = ColorMap()
     ) const;
     /** This method is provided for convenience and does the same
@@ -160,8 +178,11 @@ public:
 
 private:
     bool loadPixmap(const QString& path, QPixmap&) const;
+    QPixmap findPixmapNoFallback(const char* name) const;
+    QString findInExternalTheme(const QString& name) const;
     void restoreCustomPaths();
     void configureUseIconTheme();
+    void configureExternalTheme();
 
     static BitmapFactoryInst* _pcSingleton;
     BitmapFactoryInst();
