@@ -23,8 +23,10 @@
 #include <QApplication>
 #include <QBitmap>
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QMap>
 #include <QImageReader>
 #include <QPainter>
@@ -34,6 +36,7 @@
 #include <QSvgRenderer>
 #include <QStyleOption>
 
+#include <cstdlib>
 #include <string>
 #include <Inventor/fields/SoSFImage.h>
 
@@ -50,9 +53,13 @@ namespace Gui
 class BitmapFactoryInstP
 {
 public:
+    QMap<std::string, const char**> xpmMap;
     QMap<std::string, QPixmap> xpmCache;
 
     bool useIconTheme;
+    QString externalThemePath;
+    bool externalThemeEnabled {false};
+    bool preferExternal {true};
 };
 }  // namespace Gui
 
@@ -99,6 +106,7 @@ BitmapFactoryInst::BitmapFactoryInst()
 
     restoreCustomPaths();
     configureUseIconTheme();
+    configureExternalTheme();
 }
 
 BitmapFactoryInst::~BitmapFactoryInst()
@@ -124,6 +132,82 @@ void Gui::BitmapFactoryInst::configureUseIconTheme()
     );
 
     d->useIconTheme = group->GetBool("UseIconTheme", group->GetBool("ThemeSearchPaths", false));
+}
+
+void Gui::BitmapFactoryInst::configureExternalTheme()
+{
+    Base::Reference<ParameterGrp> group = App::GetApplication().GetParameterGroupByPath(
+        "User parameter:BaseApp/Preferences/Bitmaps/ExternalTheme"
+    );
+
+    d->externalThemeEnabled = group->GetBool("Enabled", false);
+    d->preferExternal = group->GetBool("PreferExternal", true);
+
+    QString path = QString::fromUtf8(group->GetASCII("Path", "").c_str());
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    if (qEnvironmentVariableIsSet("FREECAD_EXTERNAL_ICON_THEME_ENABLED")) {
+        const QString value
+            = qEnvironmentVariable("FREECAD_EXTERNAL_ICON_THEME_ENABLED").trimmed().toLower();
+        d->externalThemeEnabled = !(
+            value == QLatin1String("0") || value == QLatin1String("false")
+            || value == QLatin1String("no") || value == QLatin1String("off")
+        );
+    }
+
+    if (qEnvironmentVariableIsSet("FREECAD_EXTERNAL_ICON_THEME_PREFER_EXTERNAL")) {
+        const QString value
+            = qEnvironmentVariable("FREECAD_EXTERNAL_ICON_THEME_PREFER_EXTERNAL").trimmed().toLower();
+        d->preferExternal = !(
+            value == QLatin1String("0") || value == QLatin1String("false")
+            || value == QLatin1String("no") || value == QLatin1String("off")
+        );
+    }
+
+    if (qEnvironmentVariableIsSet("FREECAD_EXTERNAL_ICON_THEME")) {
+        path = qEnvironmentVariable("FREECAD_EXTERNAL_ICON_THEME");
+        if (!path.isEmpty()) {
+            d->externalThemeEnabled = true;
+        }
+    }
+#else
+    if (const char* envEnabled = std::getenv("FREECAD_EXTERNAL_ICON_THEME_ENABLED")) {
+        const QString value = QString::fromLocal8Bit(envEnabled).trimmed().toLower();
+        d->externalThemeEnabled = !(
+            value == QLatin1String("0") || value == QLatin1String("false")
+            || value == QLatin1String("no") || value == QLatin1String("off")
+        );
+    }
+
+    if (const char* envPrefer = std::getenv("FREECAD_EXTERNAL_ICON_THEME_PREFER_EXTERNAL")) {
+        const QString value = QString::fromLocal8Bit(envPrefer).trimmed().toLower();
+        d->preferExternal = !(
+            value == QLatin1String("0") || value == QLatin1String("false")
+            || value == QLatin1String("no") || value == QLatin1String("off")
+        );
+    }
+
+    if (const char* envPath = std::getenv("FREECAD_EXTERNAL_ICON_THEME")) {
+        path = QString::fromLocal8Bit(envPath);
+        if (!path.isEmpty()) {
+            d->externalThemeEnabled = true;
+        }
+    }
+#endif
+
+    if (!path.isEmpty()) {
+        QFileInfo fi(path);
+        if (fi.exists() && fi.isDir()) {
+            d->externalThemePath = fi.absoluteFilePath();
+        }
+        else {
+            d->externalThemePath.clear();
+            d->externalThemeEnabled = false;
+        }
+    }
+    else {
+        d->externalThemePath.clear();
+    }
 }
 
 void BitmapFactoryInst::addPath(const QString& path)
@@ -169,6 +253,11 @@ QStringList BitmapFactoryInst::findIconFiles() const
     return files;
 }
 
+void BitmapFactoryInst::addXPM(const char* name, const char** pXPM)
+{
+    d->xpmMap[name] = pXPM;
+}
+
 void BitmapFactoryInst::addPixmapToCache(const char* name, const QPixmap& icon)
 {
     d->xpmCache[name] = icon;
@@ -184,22 +273,66 @@ bool BitmapFactoryInst::findPixmapInCache(const char* name, QPixmap& px) const
     return false;
 }
 
+void BitmapFactoryInst::clearCache()
+{
+    d->xpmCache.clear();
+}
+
+void BitmapFactoryInst::reloadExternalThemeSettings()
+{
+    configureExternalTheme();
+    clearCache();
+}
+
 QIcon BitmapFactoryInst::iconFromTheme(const char* name, const QIcon& fallback)
 {
-    if (!d->useIconTheme) {
-        return iconFromDefaultTheme(name, fallback);
-    }
-
     QString iconName = QString::fromUtf8(name);
-    QIcon icon = QIcon::fromTheme(iconName, fallback);
-    if (icon.isNull()) {
-        QPixmap px = pixmap(name);
-        if (!px.isNull()) {
-            icon.addPixmap(px);
+
+    if (d->externalThemeEnabled && d->preferExternal) {
+        const QString externalPath = findInExternalTheme(iconName);
+        if (!externalPath.isEmpty()) {
+            QPixmap externalPixmap;
+            if (loadPixmap(externalPath, externalPixmap) && !externalPixmap.isNull()) {
+                QIcon externalIcon;
+                externalIcon.addPixmap(externalPixmap);
+                return externalIcon;
+            }
         }
     }
 
-    return icon;
+    if (!d->useIconTheme) {
+        QIcon icon = iconFromDefaultTheme(name, fallback);
+        if (!icon.isNull()) {
+            return icon;
+        }
+    }
+    else {
+        QIcon icon = QIcon::fromTheme(iconName, fallback);
+        if (!icon.isNull()) {
+            return icon;
+        }
+    }
+
+    QPixmap px = findPixmapNoFallback(name);
+    if (!px.isNull()) {
+        QIcon icon;
+        icon.addPixmap(px);
+        return icon;
+    }
+
+    if (d->externalThemeEnabled && !d->preferExternal) {
+        const QString externalPath = findInExternalTheme(iconName);
+        if (!externalPath.isEmpty()) {
+            QPixmap externalPixmap;
+            if (loadPixmap(externalPath, externalPixmap) && !externalPixmap.isNull()) {
+                QIcon externalIcon;
+                externalIcon.addPixmap(externalPixmap);
+                return externalIcon;
+            }
+        }
+    }
+
+    return fallback;
 }
 
 bool BitmapFactoryInst::loadPixmap(const QString& filename, QPixmap& icon) const
@@ -223,20 +356,148 @@ bool BitmapFactoryInst::loadPixmap(const QString& filename, QPixmap& icon) const
     return !icon.isNull();
 }
 
+QPixmap BitmapFactoryInst::findPixmapNoFallback(const char* name) const
+{
+    if (!name || *name == '\0') {
+        return {};
+    }
+
+    QMap<std::string, QPixmap>::ConstIterator cacheIt = d->xpmCache.constFind(name);
+    if (cacheIt != d->xpmCache.cend()) {
+        return cacheIt.value();
+    }
+
+    QPixmap icon;
+    QMap<std::string, const char**>::ConstIterator xpmIt = d->xpmMap.constFind(name);
+    if (xpmIt != d->xpmMap.cend()) {
+        icon = QPixmap(xpmIt.value());
+    }
+
+    QString fn = QString::fromUtf8(name);
+
+    if (icon.isNull()) {
+        loadPixmap(fn, icon);
+    }
+
+    if (icon.isNull() && d->externalThemeEnabled && d->preferExternal) {
+        const QString externalPath = findInExternalTheme(fn);
+        if (!externalPath.isEmpty()) {
+            loadPixmap(externalPath, icon);
+        }
+    }
+
+    if (icon.isNull()) {
+        QList<QByteArray> formats = QImageReader::supportedImageFormats();
+        formats.prepend("SVG");
+
+        QString fileName = QString::fromLatin1("icons:") + fn;
+        if (!loadPixmap(fileName, icon)) {
+            for (QList<QByteArray>::iterator fm = formats.begin(); fm != formats.end(); ++fm) {
+                QString path = QString::fromLatin1("%1.%2").arg(
+                    fileName,
+                    QString::fromLatin1((*fm).toLower().constData())
+                );
+                if (loadPixmap(path, icon)) {
+                    break;
+                }
+            }
+        }
+    }
+
+    if (icon.isNull() && d->externalThemeEnabled && !d->preferExternal) {
+        const QString externalPath = findInExternalTheme(fn);
+        if (!externalPath.isEmpty()) {
+            loadPixmap(externalPath, icon);
+        }
+    }
+
+    return icon;
+}
+
+QString BitmapFactoryInst::findInExternalTheme(const QString& name) const
+{
+    if (!d->externalThemeEnabled || d->externalThemePath.isEmpty()) {
+        return {};
+    }
+
+    QFileInfo rootInfo(d->externalThemePath);
+    if (!rootInfo.exists() || !rootInfo.isDir()) {
+        return {};
+    }
+
+    const QFileInfo inputInfo(name);
+    const QString completeName = inputInfo.fileName();
+    const QString baseName = inputInfo.completeBaseName().isEmpty() ? completeName
+                                                                    : inputInfo.completeBaseName();
+
+    QStringList candidates;
+    if (!completeName.isEmpty()) {
+        candidates << completeName;
+    }
+    if (!baseName.isEmpty()) {
+        candidates << baseName;
+        candidates << (baseName + QLatin1String(".svg"));
+        candidates << (baseName + QLatin1String(".png"));
+        candidates << (baseName + QLatin1String(".xpm"));
+    }
+    candidates.removeDuplicates();
+
+    const QStringList subdirs = {
+        QString(),
+        QStringLiteral("icons"),
+        QStringLiteral("Icons"),
+        QStringLiteral("images"),
+        QStringLiteral("Images")
+    };
+
+    for (const QString& subdir : subdirs) {
+        QDir dir(d->externalThemePath);
+        if (!subdir.isEmpty() && !dir.cd(subdir)) {
+            continue;
+        }
+
+        for (const QString& candidate : candidates) {
+            const QString fullPath = dir.absoluteFilePath(candidate);
+            QFileInfo fi(fullPath);
+            if (fi.exists() && fi.isFile()) {
+                return fi.absoluteFilePath();
+            }
+        }
+    }
+
+    QDirIterator it(
+        d->externalThemePath,
+        QStringList() << QStringLiteral("*.svg") << QStringLiteral("*.png")
+                      << QStringLiteral("*.xpm"),
+        QDir::Files,
+        QDirIterator::Subdirectories
+    );
+    while (it.hasNext()) {
+        const QString filePath = it.next();
+        const QFileInfo fi(filePath);
+        const QString fileName = fi.fileName();
+        const QString fileBaseName = fi.completeBaseName();
+
+        if ((!completeName.isEmpty() && fileName.compare(completeName, Qt::CaseInsensitive) == 0)
+            || (!baseName.isEmpty() && fileBaseName.compare(baseName, Qt::CaseInsensitive) == 0)) {
+            return fi.absoluteFilePath();
+        }
+    }
+
+    return {};
+}
+
 QIcon Gui::BitmapFactoryInst::iconFromDefaultTheme(const char* name, const QIcon& fallback)
 {
     QIcon icon;
-    QPixmap px = pixmap(name);
+    QPixmap px = findPixmapNoFallback(name);
 
     if (!px.isNull()) {
         icon.addPixmap(px);
         return icon;
     }
-    else {
-        return fallback;
-    }
 
-    return icon;
+    return fallback;
 }
 
 QPixmap BitmapFactoryInst::pixmap(const char* name) const
@@ -251,11 +512,27 @@ QPixmap BitmapFactoryInst::pixmap(const char* name) const
         return it.value();
     }
 
+    // now try to find it in the built-in XPM
     QPixmap icon;
+    QMap<std::string, const char**>::Iterator It = d->xpmMap.find(name);
+    if (It != d->xpmMap.end()) {
+        icon = QPixmap(It.value());
+    }
+
+    QString fn = QString::fromUtf8(name);
 
     // Try whether an absolute path is given
-    QString fn = QString::fromUtf8(name);
-    loadPixmap(fn, icon);
+    if (icon.isNull()) {
+        loadPixmap(fn, icon);
+    }
+
+    // Prefer external theme overrides before built-ins, if configured
+    if (icon.isNull() && d->externalThemeEnabled && d->preferExternal) {
+        const QString externalPath = findInExternalTheme(fn);
+        if (!externalPath.isEmpty()) {
+            loadPixmap(externalPath, icon);
+        }
+    }
 
     // try to find it in the 'icons' search paths
     if (icon.isNull()) {
@@ -277,6 +554,14 @@ QPixmap BitmapFactoryInst::pixmap(const char* name) const
         }
     }
 
+    // External theme can also act as a final fallback after built-ins
+    if (icon.isNull() && d->externalThemeEnabled && !d->preferExternal) {
+        const QString externalPath = findInExternalTheme(fn);
+        if (!externalPath.isEmpty()) {
+            loadPixmap(externalPath, icon);
+        }
+    }
+
     if (!icon.isNull()) {
         d->xpmCache[name] = icon;
         return icon;
@@ -292,14 +577,16 @@ QPixmap BitmapFactoryInst::pixmapFromSvg(
     const ColorMap& colorMapping
 ) const
 {
-    static qreal dpr = getMaximumDPR();
-
     // If an absolute path is given
     QPixmap icon;
     QString iconPath;
     QString fn = QString::fromUtf8(name);
     if (QFile(fn).exists()) {
         iconPath = fn;
+    }
+
+    if (iconPath.isEmpty() && d->externalThemeEnabled && d->preferExternal) {
+        iconPath = findInExternalTheme(fn);
     }
 
     // try to find it in the 'icons' search paths
@@ -318,19 +605,33 @@ QPixmap BitmapFactoryInst::pixmapFromSvg(
         }
     }
 
+    if (iconPath.isEmpty() && d->externalThemeEnabled && !d->preferExternal) {
+        iconPath = findInExternalTheme(fn);
+    }
+
     if (!iconPath.isEmpty()) {
         QFile file(iconPath);
         if (file.open(QFile::ReadOnly | QFile::Text)) {
             QByteArray content = file.readAll();
-            icon = pixmapFromSvg(content, size * dpr, colorMapping);
+            icon = pixmapFromSvg(content, size, colorMapping);
         }
     }
 
-    if (!icon.isNull()) {
-        icon.setDevicePixelRatio(dpr);
-    }
-
     return icon;
+}
+
+QPixmap BitmapFactoryInst::pixmapFromSvg(
+    const char* name,
+    const QSizeF& size,
+    qreal dpr,
+    const ColorMap& colorMapping
+) const
+{
+    qreal width = size.width() * dpr;
+    qreal height = size.height() * dpr;
+    QPixmap px(pixmapFromSvg(name, QSizeF(width, height), colorMapping));
+    px.setDevicePixelRatio(dpr);
+    return px;
 }
 
 QPixmap BitmapFactoryInst::pixmapFromSvg(
@@ -343,8 +644,8 @@ QPixmap BitmapFactoryInst::pixmapFromSvg(
     for (const auto& colorToColor : colorMapping) {
         ulong fromColor = colorToColor.first;
         ulong toColor = colorToColor.second;
-        QString fromColorString = QStringLiteral("#%1").arg(fromColor, 6, 16, QChar::fromLatin1('0'));
-        QString toColorString = QStringLiteral("#%1").arg(toColor, 6, 16, QChar::fromLatin1('0'));
+        QString fromColorString = QStringLiteral(":#%1;").arg(fromColor, 6, 16, QChar::fromLatin1('0'));
+        QString toColorString = QStringLiteral(":#%1;").arg(toColor, 6, 16, QChar::fromLatin1('0'));
         stringContents = stringContents.replace(fromColorString, toColorString);
     }
     QByteArray contents = stringContents.toUtf8();
@@ -368,6 +669,10 @@ QPixmap BitmapFactoryInst::pixmapFromSvg(
 QStringList BitmapFactoryInst::pixmapNames() const
 {
     QStringList names;
+    for (QMap<std::string, const char**>::Iterator It = d->xpmMap.begin(); It != d->xpmMap.end();
+         ++It) {
+        names << QString::fromUtf8(It.key().c_str());
+    }
     for (QMap<std::string, QPixmap>::Iterator It = d->xpmCache.begin(); It != d->xpmCache.end();
          ++It) {
         QString item = QString::fromUtf8(It.key().c_str());
@@ -563,8 +868,11 @@ void BitmapFactoryInst::convert(const QImage& p, SoSFImage& img) const
     size[0] = p.width();
     size[1] = p.height();
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     int buffersize = static_cast<int>(p.sizeInBytes());
-
+#else
+    int buffersize = p.byteCount();
+#endif
     int numcomponents = 0;
     QVector<QRgb> table = p.colorTable();
     if (!table.isEmpty()) {
@@ -589,13 +897,6 @@ void BitmapFactoryInst::convert(const QImage& p, SoSFImage& img) const
         numcomponents = buffersize / (size[0] * size[1]);
     }
 
-    int depth = numcomponents;
-
-    // Coin3D only supports up to 32-bit images
-    if (numcomponents == 8) {
-        numcomponents = 4;
-    }
-
     // allocate image data
     img.setValue(size, numcomponents, nullptr);
 
@@ -607,39 +908,28 @@ void BitmapFactoryInst::convert(const QImage& p, SoSFImage& img) const
     for (int y = 0; y < height; y++) {
         unsigned char* line = &bytes[width * numcomponents * (height - (y + 1))];
         for (int x = 0; x < width; x++) {
-            QColor col = p.pixelColor(x, y);
-            switch (depth) {
+            QRgb rgb = p.pixel(x, y);
+            switch (numcomponents) {
                 default:
                     break;
-                case 1: {
-                    QRgb rgb = col.rgb();
+                case 1:
                     line[0] = qGray(rgb);
-                } break;
-                case 2: {
-                    QRgb rgb = col.rgba();
+                    break;
+                case 2:
                     line[0] = qGray(rgb);
                     line[1] = qAlpha(rgb);
-                } break;
-                case 3: {
-                    QRgb rgb = col.rgb();
+                    break;
+                case 3:
                     line[0] = qRed(rgb);
                     line[1] = qGreen(rgb);
                     line[2] = qBlue(rgb);
-                } break;
-                case 4: {
-                    QRgb rgb = col.rgba();
-                    line[0] = qRed(rgb);
-                    line[1] = qGreen(rgb);
-                    line[2] = qBlue(rgb);
-                    line[3] = qAlpha(rgb);
-                } break;
-                case 8: {
-                    QRgba64 rgb = col.rgba64();
+                    break;
+                case 4:
                     line[0] = qRed(rgb);
                     line[1] = qGreen(rgb);
                     line[2] = qBlue(rgb);
                     line[3] = qAlpha(rgb);
-                } break;
+                    break;
             }
 
             line += numcomponents;
