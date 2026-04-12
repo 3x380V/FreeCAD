@@ -480,7 +480,7 @@ void TaskMeasure::refreshResult()
     if (!_mMeasureObject) {
         return;
     }
-    valueResult->setText(_mMeasureObject->getResultString());
+    valueResult->setText(QString::fromStdString(_mMeasureObject->getResultString()));
 }
 
 
