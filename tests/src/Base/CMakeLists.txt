@@ -20,6 +20,7 @@ add_executable(Base_tests_run
         Matrix.cpp
         Parameter.cpp
         ParameterObserver.cpp
+        PlatformPaths.cpp
         Placement.cpp
         Persistence.cpp
         PyException.cpp
