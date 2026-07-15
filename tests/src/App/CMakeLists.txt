@@ -28,10 +28,13 @@ add_executable(App_tests_run
         PropertyExpressionEngine.cpp
         ProgramInformation.cpp
         QuantityInput.cpp
-        StringHasher.cpp
         VarSet.cpp
         VRMLObject.cpp
 )
+
+if(FREECAD_HAS_QT)
+    target_sources(App_tests_run PRIVATE StringHasher.cpp)
+endif()
 
 target_compile_definitions(App_tests_run PRIVATE DATADIR="${CMAKE_SOURCE_DIR}/data")
 
