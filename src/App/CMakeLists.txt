@@ -1,8 +1,17 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-BISON_TARGET(ExpressionParser Expression.y Expression.tab.cpp
+BISON_TARGET(ExpressionParser Expression.y Expression.tab.gen.cpp
     DEFINES_FILE Expression.tab.h
     COMPILE_FLAGS "-v -Wall -Wcounterexamples -Wconflicts-sr")
+# bison 3.8's glr2.cc skeleton copies semantic values bytewise, which corrupts
+# the non-trivial value type of this parser; patch the generated file.
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Expression.tab.cpp
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/fix-glr2-semantic-copy.py
+        ${CMAKE_CURRENT_BINARY_DIR}/Expression.tab.gen.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/Expression.tab.cpp
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Expression.tab.gen.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/fix-glr2-semantic-copy.py
+    COMMENT "Fixing glr2.cc semantic value copies in Expression.tab.cpp")
 FLEX_TARGET(ExpressionLexer Expression.l Expression.lex.c
     COMPILE_FLAGS "-v")
 ADD_FLEX_BISON_DEPENDENCY(ExpressionLexer ExpressionParser)
@@ -421,6 +430,7 @@ add_dependencies(FreeCADApp fc_version)
 
 add_custom_target(GenerateExpressionParser DEPENDS
     ${BISON_ExpressionParser_OUTPUTS}
+    ${CMAKE_CURRENT_BINARY_DIR}/Expression.tab.cpp
     ${FLEX_ExpressionLexer_OUTPUTS})
 add_dependencies(FreeCADApp GenerateExpressionParser)
 
