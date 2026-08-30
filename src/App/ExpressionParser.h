@@ -712,11 +712,13 @@ public:
     {}
 };
 
-#define YYSTYPE semantic_type
-#include <App/Expression.tab.h>
-#undef YYTOKENTYPE
-#undef YYSTYPE
-#undef YYSTYPE_ISDECLARED
 }  // namespace ExpressionParser
 
 }  // namespace App
+
+#include <App/Expression.tab.h>
+
+namespace App::ExpressionParser
+{
+using enum parser::token::token_kind_type;
+}  // namespace App::ExpressionParser

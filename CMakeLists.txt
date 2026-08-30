@@ -99,7 +99,7 @@ if(WIN32)
     find_program(BISON_EXECUTABLE NAMES bison win_bison)
 endif()
 find_package(FLEX REQUIRED)
-find_package(BISON 3.6 REQUIRED)  # 3.6+ required for -Wcounterexamples flag
+find_package(BISON 3.8 REQUIRED)  # 3.8+ required for the glr2.cc skeleton
 if(NOT FREECAD_LIBPACK_USE OR FREECAD_LIBPACK_CHECKFILE_CLBUNDLER OR FREECAD_LIBPACK_CHECKFILE_VERSION)
     SetupPython()
     SetupPCL()

@@ -34,7 +34,6 @@
 #define strdup _strdup
 #endif
 
-extern std::stack<FunctionExpression::Function> functions;                /**< Function identifier */
 extern int last_column;
 extern int column;
 
