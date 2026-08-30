@@ -25,14 +25,13 @@
 
 /* Parser for the FreeCAD Expression language */
 
-%{
-#define YYSTYPE App::ExpressionParser::semantic_type
-
-std::stack<FunctionExpression::Function> functions;                /**< Function identifier */
-
-#define yyparse ExpressionParser_yyparse
-#define yyerror ExpressionParser_yyerror
-%}
+%require "3.8"
+%skeleton "glr2.cc"
+%glr-parser
+%expect 0
+%expect-rr 0
+%define api.namespace {App::ExpressionParser}
+%define api.value.type {App::ExpressionParser::semantic_type}
 
      %token FUNC
      %token ONE
@@ -108,7 +107,7 @@ exp:      num                                   { $$ = $1;                      
         | exp GTE exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::GTE, $3);   }
         | exp LTE exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::LTE, $3);   }
         | indexable                             { $$ = $1;                                                                        }
-        | FUNC  args ')'                        { $$ = new FunctionExpression(DocumentObject, $1.first, std::move($1.second), $2);}
+        | FUNC  args ')'                        { $$ = new FunctionExpression(DocumentObject, $1.first, std::string($1.second), $2);}
         | exp '?' exp ':' exp                   { $$ = new ConditionalExpression(DocumentObject, $1, $3, $5);                     }
         | '(' exp ')'                           { $$ = $2; }
         ;
@@ -120,10 +119,10 @@ num:       ONE                                  { $$ = new NumberExpression(Docu
 
 args: exp                                       { $$.push_back($1);                                                               }
     | range                                     { $$.push_back($1);                                                               }
-    | args ',' exp                              { $1.push_back($3);  $$ = $1;                                                     }
-    | args ';' exp                              { $1.push_back($3);  $$ = $1;                                                     }
-    | args ',' range                            { $1.push_back($3);  $$ = $1;                                                     }
-    | args ';' range                            { $1.push_back($3);  $$ = $1;                                                     }
+    | args ',' exp                              { $$ = $1;  $$.push_back($3);                                                     }
+    | args ';' exp                              { $$ = $1;  $$.push_back($3);                                                     }
+    | args ',' range                            { $$ = $1;  $$.push_back($3);                                                     }
+    | args ';' range                            { $$ = $1;  $$.push_back($3);                                                     }
     ;
 
 range: id_or_cell ':' id_or_cell                { $$ = new RangeExpression(DocumentObject, $1, $3);                               }
@@ -147,19 +146,19 @@ integer: INTEGER { $$ = $1; }
        ;
 
 id_or_cell
-    : IDENTIFIER                            { $$ = std::move($1); }
-    | CELLADDRESS                           { $$ = std::move($1); }
+    : IDENTIFIER                            { $$ = $1; }
+    | CELLADDRESS                           { $$ = $1; }
     ;
 
 identifier
     : id_or_cell                            { $$ = ObjectIdentifier(DocumentObject); $$ << ObjectIdentifier::SimpleComponent($1); }
-    | iden                                  { $$ = std::move($1); }
+    | iden                                  { $$ = $1; }
     ;
 
 iden
     :  '.' STRING '.' id_or_cell            { /* Path to property of a sub-object of the current object*/
                                                 $$ = ObjectIdentifier(DocumentObject,true);
-                                                $$.setDocumentObjectName(DocumentObject,false,ObjectIdentifier::String(std::move($2),true),true);
+                                                $$.setDocumentObjectName(DocumentObject,false,ObjectIdentifier::String($2,true),true);
                                                 $$.addComponent(ObjectIdentifier::SimpleComponent($4));
                                             }
     | '.' id_or_cell                        { /* Path to property of the current document object */
@@ -169,32 +168,33 @@ iden
                                             }
     | object '.' STRING '.' id_or_cell      { /* Path to property of a sub-object */
                                                 $$ = ObjectIdentifier(DocumentObject);
-                                                $$.setDocumentObjectName(std::move($1), true, ObjectIdentifier::String(std::move($3),true),true);
+                                                $$.setDocumentObjectName(ObjectIdentifier::String($1), true, ObjectIdentifier::String($3,true),true);
                                                 $$.addComponent(ObjectIdentifier::SimpleComponent($5));
                                                 $$.resolveAmbiguity();
                                             }
     | object '.' id_or_cell                 { /* Path to property of a given document object */
                                                 $$ = ObjectIdentifier(DocumentObject);
-                                                $1.checkImport(DocumentObject);
-                                                $$.addComponent(ObjectIdentifier::SimpleComponent($1));
+                                                auto importedObject = $1;
+                                                importedObject.checkImport(DocumentObject);
+                                                $$.addComponent(ObjectIdentifier::SimpleComponent(importedObject));
                                                 $$.addComponent(ObjectIdentifier::SimpleComponent($3));
                                                 $$.resolveAmbiguity();
                                             }
     | document '#' object '.' id_or_cell    { /* Path to property from an external document, within a named document object */
                                                 $$ = ObjectIdentifier(DocumentObject);
-                                                $$.setDocumentName(std::move($1), true);
-                                                $$.setDocumentObjectName(std::move($3), true);
+                                                $$.setDocumentName(ObjectIdentifier::String($1), true);
+                                                $$.setDocumentObjectName(ObjectIdentifier::String($3), true);
                                                 $$.addComponent(ObjectIdentifier::SimpleComponent($5));
                                                 $$.resolveAmbiguity();
                                             }
     | document '#' object '.' STRING '.' id_or_cell
                                             {   $$ = ObjectIdentifier(DocumentObject);
-                                                $$.setDocumentName(std::move($1), true);
-                                                $$.setDocumentObjectName(std::move($3), true, ObjectIdentifier::String(std::move($5),true));
+                                                $$.setDocumentName(ObjectIdentifier::String($1), true);
+                                                $$.setDocumentObjectName(ObjectIdentifier::String($3), true, ObjectIdentifier::String($5,true));
                                                 $$.addComponent(ObjectIdentifier::SimpleComponent($7));
                                                 $$.resolveAmbiguity();
                                             }
-    | iden '.' IDENTIFIER                   { $$= std::move($1); $$.addComponent(ObjectIdentifier::SimpleComponent($3)); }
+    | iden '.' IDENTIFIER                   { $$ = $1; $$.addComponent(ObjectIdentifier::SimpleComponent($3)); }
     ;
 
 indexer
@@ -215,13 +215,13 @@ indexable
     ;
 
 document
-    : STRING                                { $$ = ObjectIdentifier::String(std::move($1), true); }
-    | IDENTIFIER                            { $$ = ObjectIdentifier::String(std::move($1), false, true);}
+    : STRING                                { $$ = ObjectIdentifier::String($1, true); }
+    | IDENTIFIER                            { $$ = ObjectIdentifier::String($1, false, true);}
     ;
 
 object
-    : STRING                                { $$ = ObjectIdentifier::String(std::move($1), true); }
-    | id_or_cell                            { $$ = ObjectIdentifier::String(std::move($1), false);}
+    : STRING                                { $$ = ObjectIdentifier::String($1, true); }
+    | id_or_cell                            { $$ = ObjectIdentifier::String($1, false);}
     ;
 
 %%

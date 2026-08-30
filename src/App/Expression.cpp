@@ -3519,9 +3519,10 @@ bool isModuleImported(PyObject *module) {
 /**
  * @brief Error function for parser.
  *
- * @throws Base::Exception A generic parser error.
+ * Errors are reported to the caller via the non-zero return value of
+ * parser::parse().
  */
-void ExpressionParser_yyerror(const char *errorinfo)
+void parser::error(const std::string& errorinfo)
 {
     (void)errorinfo;
 }
@@ -3578,8 +3579,11 @@ static int last_column;
 static int column;
 
 // show the parser the lexer method
-#define yylex ExpressionParserlex
 int ExpressionParserlex();
+
+/// Semantic value produced by the lexer, consumed by the yylex() adapter below.
+static semantic_type yylval;
+int yylex(parser::value_type* lvalp);
 
 #if defined(__clang__)
 # pragma clang diagnostic push
@@ -3591,14 +3595,31 @@ int ExpressionParserlex();
 # pragma GCC diagnostic ignored "-Wfree-nonheap-object"
 #endif
 
-// Parser, defined in Expression.y
-# define YYTOKENTYPE
-#include "Expression.tab.c"
+}  // namespace ExpressionParser
+}  // namespace App
+
+// Parser, defined in Expression.y. It opens namespace App::ExpressionParser
+// itself, so it is included at global scope.
+#include "Expression.tab.cpp"
+
+namespace App {
+namespace ExpressionParser {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 // Scanner, defined in Expression.l
 #include "Expression.lex.c"
 #endif // DOXYGEN_SHOULD_SKIP_THIS
+
+// flex's prefix option renames yylex via a macro; the GLR parser calls the
+// yylex() adapter below by its real name.
+#undef yylex
+
+int yylex(parser::value_type* lvalp)
+{
+    int token = ExpressionParserlex();
+    *lvalp = std::move(yylval);
+    return token;
+}
 
 class StringBufferCleaner
 {
@@ -3767,7 +3788,7 @@ ExpressionPtr App::ExpressionParser::parse(const App::DocumentObject* owner, con
     initParser(owner);
 
     // run the parser
-    int result = ExpressionParser::ExpressionParser_yyparse ();
+    int result = ExpressionParser::parser().parse();
 
     if (result != 0) {
         throw ParserError(fmt::format("Failed to parse expression '{}'", buffer));
@@ -3796,7 +3817,7 @@ std::unique_ptr<UnitExpression> ExpressionParser::parseUnit(
     initParser(owner);
 
     // run the parser
-    int result = ExpressionParser::ExpressionParser_yyparse ();
+    int result = ExpressionParser::parser().parse();
 
     if (result != 0)
         throw ParserError("Failed to parse expression.");

@@ -683,11 +683,15 @@ public:
     {}
 };
 
-#define YYSTYPE semantic_type
-#include "Expression.tab.h"
-#undef YYTOKENTYPE
-#undef YYSTYPE
-#undef YYSTYPE_ISDECLARED
 }  // namespace ExpressionParser
 
 }  // namespace App
+
+#include "Expression.tab.h"
+
+namespace App::ExpressionParser
+{
+// Expose the token kinds (UNIT, IDENTIFIER, ...) at namespace scope for
+// consumers of tokenize() comparing against them.
+using enum parser::token::token_kind_type;
+}  // namespace App::ExpressionParser

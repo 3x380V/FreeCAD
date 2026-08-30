@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-BISON_TARGET(ExpressionParser Expression.y Expression.tab.c
+BISON_TARGET(ExpressionParser Expression.y Expression.tab.cpp
     DEFINES_FILE Expression.tab.h
     COMPILE_FLAGS "-v -Wall -Wcounterexamples -Wconflicts-sr")
 FLEX_TARGET(ExpressionLexer Expression.l Expression.lex.c
