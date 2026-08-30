@@ -27,6 +27,7 @@
 #pragma once
 
 #include "Expression.h"
+#include "ExpressionLexer.h"
 #include <Base/Matrix.h>
 #include <Base/Quantity.h>
 #include <Base/Vector3D.h>
@@ -633,7 +634,6 @@ namespace ExpressionParser
 {
 AppExport ExpressionPtr parse(const App::DocumentObject* owner, const char* buffer);
 AppExport std::unique_ptr<UnitExpression> parseUnit(const App::DocumentObject* owner, const char* buffer);
-AppExport ObjectIdentifier parsePath(const App::DocumentObject* owner, const char* buffer);
 AppExport bool isTokenAnIndentifier(const std::string& str);
 AppExport bool isTokenAConstant(const std::string& str);
 AppExport bool isTokenAUnit(const std::string& str);
@@ -651,43 +651,17 @@ public:
 AppExport bool isModuleImported(PyObject*);
 
 /**
- * @brief The semantic_type class encapsulates the value in the parse tree during parsing.
+ * @brief Internal parser entry point, implemented in ExpressionParser.cpp.
+ *
+ * Returns nullptr on a syntax error.  On success exactly one of
+ * unitExpression/valueExpression is set, telling whether the input was a
+ * pure unit expression or a value expression.
  */
+ExpressionPtr parseImpl(const App::DocumentObject* owner,
+                        const char* buffer,
+                        bool& unitExpression,
+                        bool& valueExpression);
 
-class semantic_type
-{
-public:
-    struct
-    {
-        Base::Quantity scaler;
-        std::string unitStr;
-    } quantity;
-    Expression::Component* component {nullptr};
-    Expression* expr {nullptr};
-    ObjectIdentifier path;
-    std::deque<ObjectIdentifier::Component> components;
-    long long int ivalue {0};
-    double fvalue {0};
-    struct
-    {
-        const char* name = "";
-        double fvalue = 0;
-    } constant;
-    std::vector<Expression*> arguments;
-    std::vector<Expression*> list;
-    std::string string;
-    std::pair<FunctionExpression::Function, std::string> func;
-    ObjectIdentifier::String string_or_identifier;
-    semantic_type()
-        : func({FunctionExpression::NONE, std::string()})
-    {}
-};
-
-#define YYSTYPE semantic_type
-#include "Expression.tab.h"
-#undef YYTOKENTYPE
-#undef YYSTYPE
-#undef YYSTYPE_ISDECLARED
 }  // namespace ExpressionParser
 
 }  // namespace App

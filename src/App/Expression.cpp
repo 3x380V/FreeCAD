@@ -3516,236 +3516,9 @@ bool isModuleImported(PyObject *module) {
     return false;
 }
 
-/**
- * @brief Error function for parser.
- *
- * @throws Base::Exception A generic parser error.
- */
-void ExpressionParser_yyerror(const char *errorinfo)
-{
-    (void)errorinfo;
-}
+}  // namespace ExpressionParser
 
-/* helper function for tuning number strings with groups in a locale agnostic way... */
-double num_change(char* yytext,char dez_delim,char grp_delim)
-{
-    double ret_val;
-    char temp[40];
-    int i = 0;
-    for(char* c=yytext;*c!='\0';c++){
-        // skip group delimiter
-        if(*c==grp_delim) continue;
-        // check for a dez delimiter other then dot
-        if(*c==dez_delim && dez_delim !='.')
-             temp[i++] = '.';
-        else
-            temp[i++] = *c;
-        // check buffer overflow
-        if (i>39)
-            return 0.0;
-    }
-    temp[i] = '\0';
-
-    errno = 0;
-    ret_val = strtod( temp, nullptr );
-    if (ret_val == 0 && errno == ERANGE)
-        throw Base::UnderflowError("Number underflow.");
-    if (ret_val == HUGE_VAL || ret_val == -HUGE_VAL)
-        throw Base::OverflowError("Number overflow.");
-
-    return ret_val;
-}
-
-/// The resulting expression after a successful parsing.
-static ExpressionPtr ScanResult = ExpressionPtr {};
-
-/// The DocumentObject that will own the expression.
-static const App::DocumentObject* DocumentObject = nullptr;
-
-/// Whether the parsed string is a unit only.
-static bool unitExpression = false;
-
-/// Whether the parsed string is a full expression.
-static bool valueExpression = false;
-
-/// Label string primitive.
-static std::stack<std::string> labels;
-
-/// Registered functions during parsing.
-static std::map<std::string, FunctionExpression::Function> registered_functions;
-
-static int last_column;
-static int column;
-
-// show the parser the lexer method
-#define yylex ExpressionParserlex
-int ExpressionParserlex();
-
-#if defined(__clang__)
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wsign-compare"
-# pragma clang diagnostic ignored "-Wunneeded-internal-declaration"
-#elif defined (__GNUC__)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wsign-compare"
-# pragma GCC diagnostic ignored "-Wfree-nonheap-object"
-#endif
-
-// Parser, defined in Expression.y
-# define YYTOKENTYPE
-#include "Expression.tab.c"
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-// Scanner, defined in Expression.l
-#include "Expression.lex.c"
-#endif // DOXYGEN_SHOULD_SKIP_THIS
-
-class StringBufferCleaner
-{
-public:
-    explicit StringBufferCleaner(YY_BUFFER_STATE buffer)
-        : my_string_buffer {buffer}
-    {}
-    ~StringBufferCleaner()
-    {
-        // free the scan buffer
-        yy_delete_buffer(my_string_buffer);
-    }
-
-    StringBufferCleaner(const StringBufferCleaner&) = delete;
-    StringBufferCleaner(StringBufferCleaner&&) = delete;
-    StringBufferCleaner& operator=(const StringBufferCleaner&) = delete;
-    StringBufferCleaner& operator=(StringBufferCleaner&&) = delete;
-
-private:
-    YY_BUFFER_STATE my_string_buffer;
-};
-
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#elif defined (__GNUC__)
-# pragma GCC diagnostic pop
-#endif
-
-#ifdef _MSC_VER
-# define strdup _strdup
-#endif
-
-static void initParser(const App::DocumentObject *owner)
-{
-    static bool has_registered_functions = false;
-
-    using namespace App::ExpressionParser;
-
-    ScanResult.reset();
-    App::ExpressionParser::DocumentObject = owner;
-    labels = std::stack<std::string>();
-    column = 0;
-    unitExpression = valueExpression = false;
-
-    if (!has_registered_functions) {
-        registered_functions["abs"] = FunctionExpression::ABS;
-        registered_functions["acos"] = FunctionExpression::ACOS;
-        registered_functions["asin"] = FunctionExpression::ASIN;
-        registered_functions["atan"] = FunctionExpression::ATAN;
-        registered_functions["atan2"] = FunctionExpression::ATAN2;
-        registered_functions["cath"] = FunctionExpression::CATH;
-        registered_functions["cbrt"] = FunctionExpression::CBRT;
-        registered_functions["ceil"] = FunctionExpression::CEIL;
-        registered_functions["cos"] = FunctionExpression::COS;
-        registered_functions["cosh"] = FunctionExpression::COSH;
-        registered_functions["exp"] = FunctionExpression::EXP;
-        registered_functions["floor"] = FunctionExpression::FLOOR;
-        registered_functions["hypot"] = FunctionExpression::HYPOT;
-        registered_functions["log"] = FunctionExpression::LOG;
-        registered_functions["log10"] = FunctionExpression::LOG10;
-        registered_functions["mod"] = FunctionExpression::MOD;
-        registered_functions["pow"] = FunctionExpression::POW;
-        registered_functions["round"] = FunctionExpression::ROUND;
-        registered_functions["sin"] = FunctionExpression::SIN;
-        registered_functions["sinh"] = FunctionExpression::SINH;
-        registered_functions["sqrt"] = FunctionExpression::SQRT;
-        registered_functions["tan"] = FunctionExpression::TAN;
-        registered_functions["tanh"] = FunctionExpression::TANH;
-        registered_functions["trunc"] = FunctionExpression::TRUNC;
-        registered_functions["vangle"] = FunctionExpression::VANGLE;
-        registered_functions["vcross"] = FunctionExpression::VCROSS;
-        registered_functions["vdot"] = FunctionExpression::VDOT;
-        registered_functions["vlinedist"] = FunctionExpression::VLINEDIST;
-        registered_functions["vlinesegdist"] = FunctionExpression::VLINESEGDIST;
-        registered_functions["vlineproj"] = FunctionExpression::VLINEPROJ;
-        registered_functions["vnormalize"] = FunctionExpression::VNORMALIZE;
-        registered_functions["vplanedist"] = FunctionExpression::VPLANEDIST;
-        registered_functions["vplaneproj"] = FunctionExpression::VPLANEPROJ;
-        registered_functions["vscale"] = FunctionExpression::VSCALE;
-        registered_functions["vscalex"] = FunctionExpression::VSCALEX;
-        registered_functions["vscaley"] = FunctionExpression::VSCALEY;
-        registered_functions["vscalez"] = FunctionExpression::VSCALEZ;
-
-        registered_functions["minvert"] = FunctionExpression::MINVERT;
-        registered_functions["mrotate"] = FunctionExpression::MROTATE;
-        registered_functions["mrotatex"] = FunctionExpression::MROTATEX;
-        registered_functions["mrotatey"] = FunctionExpression::MROTATEY;
-        registered_functions["mrotatez"] = FunctionExpression::MROTATEZ;
-        registered_functions["mscale"] = FunctionExpression::MSCALE;
-        registered_functions["mtranslate"] = FunctionExpression::MTRANSLATE;
-
-        registered_functions["create"] = FunctionExpression::CREATE;
-        registered_functions["list"] = FunctionExpression::LIST;
-        registered_functions["matrix"] = FunctionExpression::MATRIX;
-        registered_functions["placement"] = FunctionExpression::PLACEMENT;
-        registered_functions["rotation"] = FunctionExpression::ROTATION;
-        registered_functions["rotationx"] = FunctionExpression::ROTATIONX;
-        registered_functions["rotationy"] = FunctionExpression::ROTATIONY;
-        registered_functions["rotationz"] = FunctionExpression::ROTATIONZ;
-        registered_functions["str"] = FunctionExpression::STR;
-        registered_functions["parsequant"] = FunctionExpression::PARSEQUANT;
-        registered_functions["translationm"] = FunctionExpression::TRANSLATIONM;
-        registered_functions["tuple"] = FunctionExpression::TUPLE;
-        registered_functions["vector"] = FunctionExpression::VECTOR;
-
-        registered_functions["address"] = FunctionExpression::ADDRESS;
-        registered_functions["hiddenref"] = FunctionExpression::HIDDENREF;
-        registered_functions["href"] = FunctionExpression::HREF;
-
-        registered_functions["not"] = FunctionExpression::NOT;
-
-        // Aggregates
-        registered_functions["average"] = FunctionExpression::AVERAGE;
-        registered_functions["count"] = FunctionExpression::COUNT;
-        registered_functions["max"] = FunctionExpression::MAX;
-        registered_functions["min"] = FunctionExpression::MIN;
-        registered_functions["stddev"] = FunctionExpression::STDDEV;
-        registered_functions["sum"] = FunctionExpression::SUM;
-        registered_functions["and"] = FunctionExpression::AND;
-        registered_functions["or"] = FunctionExpression::OR;
-
-        has_registered_functions = true;
-    }
-}
-
-std::vector<std::tuple<int, int, std::string> > tokenize(const std::string &str)
-{
-    ExpressionParser::YY_BUFFER_STATE buf = ExpressionParser_scan_string(str.c_str());
-    ExpressionParser::StringBufferCleaner cleaner(buf);
-    std::vector<std::tuple<int, int, std::string> > result;
-    int token;
-
-    column = 0;
-    try {
-        while ( (token  = ExpressionParserlex()) != 0)
-            result.emplace_back(token, ExpressionParser::last_column, yytext);
-    }
-    catch (...) {
-        // Ignore all exceptions
-    }
-
-    return result;
-}
-
-}
-
-}
+}  // namespace App
 
 /**
   * Parse the expression given by \a buffer, and use \a owner as the owner of the
@@ -3760,28 +3533,18 @@ std::vector<std::tuple<int, int, std::string> > tokenize(const std::string &str)
 
 ExpressionPtr App::ExpressionParser::parse(const App::DocumentObject* owner, const char* buffer)
 {
-    // parse from buffer
-    ExpressionParser::YY_BUFFER_STATE my_string_buffer = ExpressionParser::ExpressionParser_scan_string (buffer);
-    ExpressionParser::StringBufferCleaner cleaner(my_string_buffer);
+    bool unitExpression = false;
+    bool valueExpression = false;
+    ExpressionPtr result = parseImpl(owner, buffer, unitExpression, valueExpression);
 
-    initParser(owner);
-
-    // run the parser
-    int result = ExpressionParser::ExpressionParser_yyparse ();
-
-    if (result != 0) {
+    if (!result) {
         throw ParserError(fmt::format("Failed to parse expression '{}'", buffer));
     }
 
-    if (!ScanResult) {
-        throw ParserError(fmt::format("Unknown error in expression '{}'", buffer));
-    }
-
     if (!valueExpression) {
-        ScanResult.reset();
         throw Expression::Exception("Expression can not evaluate to a value.");
     }
-    return std::exchange(ScanResult, nullptr);
+    return result;
 }
 
 std::unique_ptr<UnitExpression> ExpressionParser::parseUnit(
@@ -3789,26 +3552,20 @@ std::unique_ptr<UnitExpression> ExpressionParser::parseUnit(
     const char* buffer
 )
 {
-    // parse from buffer
-    ExpressionParser::YY_BUFFER_STATE my_string_buffer = ExpressionParser::ExpressionParser_scan_string (buffer);
-    ExpressionParser::StringBufferCleaner cleaner(my_string_buffer);
+    bool unitExpression = false;
+    bool valueExpression = false;
+    ExpressionPtr parsed = parseImpl(owner, buffer, unitExpression, valueExpression);
+    (void)valueExpression;
 
-    initParser(owner);
-
-    // run the parser
-    int result = ExpressionParser::ExpressionParser_yyparse ();
-
-    if (result != 0)
+    if (!parsed) {
         throw ParserError("Failed to parse expression.");
-
-    if (!ScanResult)
-        throw ParserError("Unknown error in expression");
+    }
 
     // Simplify expression
-    ExpressionPtr simplified = ScanResult->simplify();
+    ExpressionPtr simplified = parsed->simplify();
 
     if (!unitExpression) {
-        auto* fraction = freecad_cast<OperatorExpression*>(ScanResult.get());
+        auto* fraction = freecad_cast<OperatorExpression*>(parsed.get());
 
         if (fraction && fraction->getOperator() == OperatorExpression::DIV) {
             NumberExpression * nom = freecad_cast<NumberExpression*>(fraction->getLeft());
@@ -3819,7 +3576,7 @@ std::unique_ptr<UnitExpression> ExpressionParser::parseUnit(
                 unitExpression = true;
         }
     }
-    ScanResult.reset();
+    parsed.reset();
 
     if (!unitExpression) {
         throw Expression::Exception("Expression is not a unit.");
@@ -3830,41 +3587,3 @@ std::unique_ptr<UnitExpression> ExpressionParser::parseUnit(
     }
     return std::unique_ptr<UnitExpression>(freecad_cast<UnitExpression*>(simplified.release()));
 }
-
-namespace {
-std::tuple<int, int> getTokenAndStatus(const std::string & str)
-{
-    ExpressionParser::YY_BUFFER_STATE buf = ExpressionParser::ExpressionParser_scan_string(str.c_str());
-    ExpressionParser::StringBufferCleaner cleaner(buf);
-    int token = ExpressionParser::ExpressionParserlex();
-    int status = ExpressionParser::ExpressionParserlex();
-
-    return std::make_tuple(token, status);
-}
-}
-
-bool ExpressionParser::isTokenAnIndentifier(const std::string & str)
-{
-    int token{}, status{};
-    std::tie(token, status) = getTokenAndStatus(str);
-    return (status == 0 && (token == IDENTIFIER || token == CELLADDRESS));
-}
-
-bool ExpressionParser::isTokenAConstant(const std::string & str)
-{
-    int token{}, status{};
-    std::tie(token, status) = getTokenAndStatus(str);
-    return (status == 0 && token == CONSTANT);
-}
-
-bool ExpressionParser::isTokenAUnit(const std::string & str)
-{
-    int token{}, status{};
-    std::tie(token, status) = getTokenAndStatus(str);
-    return (status == 0 && token == UNIT);
-}
-
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#endif
-
