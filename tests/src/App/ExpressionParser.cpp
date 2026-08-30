@@ -258,12 +258,46 @@ TEST_F(ExpressionParserTest, expressionsWithMultiplyDivideParse)
     ) << "division of electrical quantities";
 }
 
-TEST_F(ExpressionParserTest, expressionsWithUnitsMultipliedDontParse_LikelyBug)
+TEST_F(ExpressionParserTest, expressionsWithUnitsMultipliedParse)
 {
+    // Fixed by the GLR parser, which attaches the number to the whole unit
+    // expression instead of failing after the first unit:
     // https://github.com/FreeCAD/FreeCAD/issues/14471
     // https://github.com/FreeCAD/FreeCAD/issues/26470
-    EXPECT_THAT(parseExpr("10 mm * kg"), IsParserError(_));
-    EXPECT_THAT(parseExpr("1234000.00 mm*kg/s^2"), IsParserError(_));
+    EXPECT_THAT(parseExpr("10 mm * kg"),
+                IsQuantity(Base::Quantity(10, Base::Unit::Length * Base::Unit::Mass)))
+        << "number applies to the product of both units";
+    EXPECT_THAT(parseExpr("1234000.00 mm*kg/s^2"),
+                IsQuantity(Base::Quantity(1234000, Base::Unit::Force)))
+        << "number applies to a compound unit expression";
+}
+
+TEST_F(ExpressionParserTest, unitNamesUsableAsIdentifiers)
+{
+    // With the GLR parser a unit name in a position where no unit
+    // interpretation survives refers to a document object or variable.
+    auto* obj = this_doc()->addObject("Sketcher::SketchObject", "mm");
+    obj->addDynamicProperty("App::PropertyFloat", "Foo");
+    EXPECT_THAT(parseExpr("mm.Foo"), IsDouble(0)) << "object named like a unit";
+
+    auto* obj2 = this_doc()->addObject("Sketcher::SketchObject", "in");
+    obj2->addDynamicProperty("App::PropertyFloat", "Bar");
+    EXPECT_THAT(parseExpr("in.Bar"), IsDouble(0)) << "object named 'in'";
+
+    EXPECT_THAT(parseExpr("mm"), IsExpressionException(_))
+        << "a bare unit name is still a unit expression, not a variable";
+    EXPECT_THAT(parseExpr("2 mm"), IsQuantity(mm(2)))
+        << "number-unit juxtaposition still wins over identifiers";
+}
+
+TEST_F(ExpressionParserTest, numberUnitJuxtapositionBindsToUnitExpression)
+{
+    EXPECT_THAT(parseExpr("2 mm^2"), IsQuantity(mm2(2)))
+        << "exponent binds to the unit, not to the quantity";
+    EXPECT_THAT(parseExpr("(2 mm)^2"), IsQuantity(mm2(4)))
+        << "parentheses force the exponent onto the quantity";
+    EXPECT_THAT(parseExpr("2 mm/s * 3"), IsQuantity(Base::Quantity(6, Base::Unit::Velocity)))
+        << "compound unit followed by scalar arithmetic";
 }
 
 TEST_F(ExpressionParserTest, dimensionlessExpressionsParseAsLongOrDouble)
@@ -308,8 +342,9 @@ TEST_F(ExpressionParserTest, expressionsThatLookValidButDoNotParse)
     // Documenting current behaviour
     // Note, for some/all of these, it's not clear to me whether it's intended that
     // it doesn't parse
-    EXPECT_THAT(parseExpr("pow(2, 3) * mm^3"), IsParserError(_))
-        << "combining dimensionless math with explicit units";
+    EXPECT_THAT(parseExpr("pow(2, 3) * mm^3"), IsRuntimeError(_))
+        << "'mm' after '*' parses as a variable reference (there is no "
+           "exp '*' unit_exp rule), which fails to resolve at evaluation";
     EXPECT_THAT(parseExpr("(vector(1 mm,2 mm,3 mm)[0]) * 2"), IsParserError(_))
         << "extract component before arithmetic";
 }

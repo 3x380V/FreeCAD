@@ -28,8 +28,8 @@
 %require "3.8"
 %skeleton "glr2.cc"
 %glr-parser
-%expect 0
-%expect-rr 0
+%expect 3
+%expect-rr 19
 %define api.namespace {App::ExpressionParser}
 %define api.value.type {App::ExpressionParser::semantic_type}
 
@@ -66,7 +66,6 @@
      %left EQ NEQ LT GT GTE LTE
      %left MINUSSIGN '+'
      %left '*' '/' '%'
-     %precedence NUM_AND_UNIT
      %left '^'
      %precedence NEG
      %precedence POS
@@ -79,27 +78,27 @@
 %%
 
 
-input:     exp                                  { ScanResult = std::unique_ptr<Expression>($1); valueExpression = true;                                        }
-     |     unit_exp                             { ScanResult = std::unique_ptr<Expression>($1); unitExpression = true;                                         }
+input:     exp %dprec 1                         { ScanResult = std::unique_ptr<Expression>($1); valueExpression = true;                                        }
+     |     unit_exp %dprec 2                    { ScanResult = std::unique_ptr<Expression>($1); unitExpression = true;                                         }
      ;
 
-unit_num: num unit_exp %prec NUM_AND_UNIT       { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::UNIT, $2);  }
-        | num us_building_unit num us_building_unit %prec NUM_AND_UNIT   { $$ = new OperatorExpression(DocumentObject, new OperatorExpression(DocumentObject, $1, OperatorExpression::UNIT, $2), OperatorExpression::ADD, new OperatorExpression(DocumentObject, $3, OperatorExpression::UNIT, $4));}
+unit_num: num unit_exp                          { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::UNIT, $2);  }
+        | num us_building_unit num us_building_unit   { $$ = new OperatorExpression(DocumentObject, new OperatorExpression(DocumentObject, $1, OperatorExpression::UNIT, $2), OperatorExpression::ADD, new OperatorExpression(DocumentObject, $3, OperatorExpression::UNIT, $4));}
         ;
 
 exp:      num                                   { $$ = $1;                                                                        }
-        | unit_num                              { $$ = $1;                                                                        }
+        | unit_num %dprec 3                     { $$ = $1;                                                                        }
         | STRING                                { $$ = new StringExpression(DocumentObject, $1);                                  }
         | identifier                            { $$ = new VariableExpression(DocumentObject, $1);                                }
         | MINUSSIGN exp %prec NEG               { $$ = new OperatorExpression(DocumentObject, $2, OperatorExpression::NEG, new NumberExpression(DocumentObject, Quantity(-1))); }
         | '+' exp %prec POS                     { $$ = new OperatorExpression(DocumentObject, $2, OperatorExpression::POS, new NumberExpression(DocumentObject, Quantity(1))); }
         | exp '+' exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::ADD, $3);   }
         | exp MINUSSIGN exp                     { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::SUB, $3);   }
-        | exp '*' exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::MUL, $3);   }
-        | exp '/' exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::DIV, $3);   }
+        | exp '*' exp %dprec 1                  { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::MUL, $3);   }
+        | exp '/' exp %dprec 1                  { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::DIV, $3);   }
         | exp '%' exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::MOD, $3);   }
-        | exp '/' unit_exp                      { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::DIV, $3);   }
-        | exp '^' exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::POW, $3);   }
+        | exp '/' unit_exp %dprec 2             { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::DIV, $3);   }
+        | exp '^' exp %dprec 1                  { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::POW, $3);   }
         | exp EQ exp                            { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::EQ, $3);    }
         | exp NEQ exp                           { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::NEQ, $3);   }
         | exp LT exp                            { $$ = new OperatorExpression(DocumentObject, $1, OperatorExpression::LT, $3);    }
@@ -148,6 +147,7 @@ integer: INTEGER { $$ = $1; }
 id_or_cell
     : IDENTIFIER                            { $$ = $1; }
     | CELLADDRESS                           { $$ = $1; }
+    | UNIT                                  { $$ = $1.unitStr; }
     ;
 
 identifier
