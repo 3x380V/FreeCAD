@@ -156,11 +156,10 @@ std::shared_ptr<std::list<std::shared_ptr<ModelLibrary>>> ModelManager::getLocal
 }
 
 void ModelManager::createLibrary([[maybe_unused]] const std::string& libraryName,
-                                 [[maybe_unused]] const std::string& iconPath,
+                                 [[maybe_unused]] const IconData& icon,
                                  [[maybe_unused]] bool readOnly)
 {
 #if defined(BUILD_MATERIAL_EXTERNAL)
-    auto icon = Materials::Library::getIcon(iconPath);
     _externalManager->createLibrary(libraryName, icon, readOnly);
 #endif
 }
@@ -316,12 +315,11 @@ bool ModelManager::passFilter(ModelFilter filter, Model::ModelType modelType)
 }
 
 #if defined(BUILD_MATERIAL_EXTERNAL)
-void ModelManager::migrateToExternal(const std::shared_ptr<Materials::ModelLibrary>& library)
+void ModelManager::migrateToExternal(const std::shared_ptr<Materials::ModelLibrary>& library,
+                                     const IconData& icon)
 {
     try {
-        _externalManager->createLibrary(library->getName(),
-                                        library->getIcon(),
-                                        library->isReadOnly());
+        _externalManager->createLibrary(library->getName(), icon, library->isReadOnly());
     }
     catch (const CreationError&) {
     }

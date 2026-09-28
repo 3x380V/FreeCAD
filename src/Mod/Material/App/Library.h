@@ -23,11 +23,10 @@
 
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <QByteArray>
 
 #include <Base/BaseClass.h>
 
@@ -36,6 +35,14 @@
 namespace Materials
 {
 
+using IconData = std::vector<std::byte>;
+
+/**
+ * A material or model library.
+ *
+ * The icon of a library is a reference: a file or Qt resource path that the
+ * Gui resolves. Icon bytes are provided only by remote libraries and Python.
+ */
 class MaterialsExport Library: public Base::BaseClass
 {
     TYPESYSTEM_HEADER_WITH_OVERRIDE();
@@ -44,7 +51,7 @@ public:
     Library() = default;
     Library(const Library &other) = default;
     Library(const std::string& libraryName, const std::string& icon, bool readOnly = true);
-    Library(const std::string& libraryName, const QByteArray& icon, bool readOnly);
+    Library(const std::string& libraryName, IconData icon, bool readOnly);
     Library(const std::string& libraryName,
             const std::string& dir,
             const std::string& iconPath,
@@ -67,20 +74,25 @@ public:
         return (_name == name);
     }
 
-    QByteArray getIcon() const
+    const std::string& getIconPath() const
     {
-        return _icon;
+        return _iconPath;
     }
-    static QByteArray getIcon(const std::string& iconPath);
-    void setIcon(const QByteArray& icon)
+    void setIconPath(std::string iconPath);
+    const IconData& getIconData() const
     {
-        _icon = icon;
+        return _iconData;
     }
-    void setIcon(const std::string& iconPath);
+    void setIconData(IconData icon);
+    bool hasIconData() const
+    {
+        return !_iconData.empty();
+    }
     bool hasIcon() const
     {
-        return !_icon.isEmpty();
+        return !_iconPath.empty() || !_iconData.empty();
     }
+    IconData loadIconData() const;
     bool isReadOnly() const
     {
         return _readOnly;
@@ -119,13 +131,13 @@ public:
 private:
     std::string _name;
     std::string _directory;
-    QByteArray _icon;
+    std::string _iconPath;
+    IconData _iconData;
     bool _readOnly;
     bool _caseSensitive;
 
     bool _local;
 
-    QByteArray loadByteArrayFromFile(const std::string& filePath) const;
     void setCaseSensitivity();
 };
 

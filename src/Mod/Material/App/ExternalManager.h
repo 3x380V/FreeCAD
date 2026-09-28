@@ -30,7 +30,7 @@
 
 #include <Mod/Material/MaterialGlobal.h>
 
-class QByteArray;
+#include "Library.h"
 
 namespace Materials
 {
@@ -57,10 +57,10 @@ public:
     std::shared_ptr<std::vector<std::shared_ptr<Library>>> materialLibraries();
     std::shared_ptr<Library> getLibrary(const std::string& name);
     void createLibrary(const std::string& libraryName,
-                       const QByteArray& icon,
+                       const IconData& icon,
                        bool readOnly = true);
     void renameLibrary(const std::string& libraryName, const std::string& newName);
-    void changeIcon(const std::string& libraryName, const QByteArray& icon);
+    void changeIcon(const std::string& libraryName, const IconData& icon);
     void removeLibrary(const std::string& libraryName);
     std::shared_ptr<std::vector<LibraryObject>> libraryModels(const std::string& libraryName);
     std::shared_ptr<std::vector<LibraryObject>> libraryMaterials(const std::string& libraryName);

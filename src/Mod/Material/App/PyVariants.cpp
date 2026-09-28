@@ -71,3 +71,8 @@ Py::List Materials::getList(const ValueList& value)
 
     return list;
 }
+
+Py::Bytes Materials::bytesFromIconData(const IconData& icon)
+{
+    return {reinterpret_cast<const char*>(icon.data()), static_cast<Py_ssize_t>(icon.size())};
+}
