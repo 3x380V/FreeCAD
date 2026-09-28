@@ -21,7 +21,7 @@
  *                                                                         *
  **************************************************************************/
 
-
+#include "PathUtils.h"
 #include <Base/Quantity.h>
 #include <Base/QuantityPy.h>
 #include <CXX/Objects.hxx>
@@ -80,7 +80,7 @@ Py::String MaterialPy::getLibraryRoot() const
     if (library->isLocal()) {
         auto materialLibrary =
             std::dynamic_pointer_cast<Materials::MaterialLibraryLocal>(library);
-        return {materialLibrary ? materialLibrary->getDirectoryPath() : ""};
+        return {materialLibrary ? Materials::pathToPortableUtf8(materialLibrary->getDirectory()) : ""};
     }
     return "";
 }

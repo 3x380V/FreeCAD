@@ -21,20 +21,23 @@
  *                                                                         *
  **************************************************************************/
 
-#include <QDirIterator>
+#include <filesystem>
+#include <system_error>
 
 #include <Base/Console.h>
+#include "PathUtils.h"
 
 #include "Model.h"
 #include "ModelLoader.h"
 #include "ModelManagerLocal.h"
+
+namespace fs = std::filesystem;
 
 using namespace Materials;
 
 std::shared_ptr<std::list<std::shared_ptr<ModelLibrary>>> ModelManagerLocal::_libraryList = nullptr;
 std::shared_ptr<std::map<std::string, std::shared_ptr<Model>>> ModelManagerLocal::_modelMap = nullptr;
 std::mutex ModelManagerLocal::_mutex;
-
 
 TYPESYSTEM_SOURCE(Materials::ModelManagerLocal, Base::BaseClass)
 
@@ -96,16 +99,14 @@ std::shared_ptr<std::list<std::shared_ptr<ModelLibrary>>> ModelManagerLocal::get
 }
 
 void ModelManagerLocal::createLibrary(const std::string& libraryName,
-                                      const std::string& directory,
+                                      const fs::path& directory,
                                       const std::string& icon,
                                       bool readOnly)
 {
-    QDir dir;
-    const QString libraryPath = QString::fromStdString(directory);
-    if (!dir.exists(libraryPath)) {
-        if (!dir.mkpath(libraryPath)) {
-            throw CreationError("Unable to create library path");
-        }
+    std::error_code ec;
+    fs::create_directories(directory, ec);
+    if (!fs::is_directory(directory)) {
+        throw CreationError("Unable to create library path");
     }
 
     auto modelLibrary = std::make_shared<ModelLibraryLocal>(libraryName, directory, icon, readOnly);
@@ -182,13 +183,12 @@ std::shared_ptr<Model> ModelManagerLocal::getModel(const std::string& uuid) cons
 
 std::shared_ptr<Model> ModelManagerLocal::getModelByPath(const std::string& path) const
 {
-    const std::string cleanPath = Library::cleanPath(path);
-
+    const fs::path filePath = Materials::pathFromUtf8(path);
     for (auto& library : *_libraryList) {
         if (library->isLocal()) {
-            auto localLibrary = std::static_pointer_cast<Materials::ModelLibraryLocal> (library);
-            if (localLibrary->startsWithDirectory(cleanPath)) {
-                return localLibrary->getModelByPath(cleanPath);
+            auto localLibrary = std::static_pointer_cast<Materials::ModelLibraryLocal>(library);
+            if (localLibrary->startsWithDirectory(filePath)) {
+                return localLibrary->getModelByPath(filePath);
             }
         }
     }

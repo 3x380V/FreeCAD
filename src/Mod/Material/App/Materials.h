@@ -189,7 +189,6 @@ public:
     }
     const std::string& getDirectory() const;
     const std::string& getFilename() const;
-    std::string getFilePath() const;
     const std::string& getUUID() const
     {
         return _uuid;

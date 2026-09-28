@@ -23,10 +23,13 @@
 
 #include <random>
 
-#include <QDirIterator>
+#include <filesystem>
+#include <system_error>
 
 #include <App/Application.h>
+#include <App/ApplicationDirectories.h>
 #include <App/Material.h>
+#include "PathUtils.h"
 
 #include "Exceptions.h"
 #include "MaterialConfigLoader.h"
@@ -36,7 +39,6 @@
 #include "MaterialManagerLocal.h"
 #include "ModelManager.h"
 #include "ModelUuids.h"
-
 
 using namespace Materials;
 
@@ -136,16 +138,14 @@ std::shared_ptr<MaterialLibrary> MaterialManagerLocal::getLibrary(const std::str
 }
 
 void MaterialManagerLocal::createLibrary(const std::string& libraryName,
-                                         const std::string& directory,
+                                         const fs::path& directory,
                                          const std::string& iconPath,
                                          bool readOnly)
 {
-    QDir dir;
-    const QString libraryPath = QString::fromStdString(directory);
-    if (!dir.exists(libraryPath)) {
-        if (!dir.mkpath(libraryPath)) {
-            throw CreationError("Unable to create library path");
-        }
+    std::error_code ec;
+    fs::create_directories(directory, ec);
+    if (!fs::is_directory(directory)) {
+        throw CreationError("Unable to create library path");
     }
 
     auto materialLibrary =
@@ -312,8 +312,7 @@ std::shared_ptr<Material> MaterialManagerLocal::getMaterial(const std::string& u
 
 std::shared_ptr<Material> MaterialManagerLocal::getMaterialByPath(const std::string& path) const
 {
-    const std::string cleanPath = Library::cleanPath(path);
-
+    const fs::path filePath = Materials::pathFromUtf8(path);
     for (auto& library : *_libraryList) {
         if (library->isLocal()) {
             auto materialLibrary =
@@ -321,9 +320,9 @@ std::shared_ptr<Material> MaterialManagerLocal::getMaterialByPath(const std::str
             if (!materialLibrary) {
                 continue;
             }
-            if (materialLibrary->startsWithDirectory(cleanPath)) {
+            if (materialLibrary->startsWithDirectory(filePath)) {
                 try {
-                    return materialLibrary->getMaterialByPath(cleanPath);
+                    return materialLibrary->getMaterialByPath(filePath);
                 }
                 catch (const MaterialNotFound&) {
                 }
@@ -331,15 +330,13 @@ std::shared_ptr<Material> MaterialManagerLocal::getMaterialByPath(const std::str
                 // See if it's a new file saved by the old editor
                 {
                     std::lock_guard<std::mutex> locker(_mutex);
-
-                    if (MaterialConfigLoader::isConfigStyle(path)) {
+                    if (MaterialConfigLoader::isConfigStyle(filePath)) {
                         auto material =
-                            MaterialConfigLoader::getMaterialFromPath(materialLibrary, path);
+                            MaterialConfigLoader::getMaterialFromPath(materialLibrary, filePath);
                         if (material) {
                             (*_materialMap)[material->getUUID()] =
-                                materialLibrary->addMaterial(material, path);
+                                materialLibrary->addMaterial(material, filePath);
                         }
-
                         return material;
                     }
                 }
@@ -350,11 +347,8 @@ std::shared_ptr<Material> MaterialManagerLocal::getMaterialByPath(const std::str
     // Older workbenches may try files outside the context of a library
     {
         std::lock_guard<std::mutex> locker(_mutex);
-
-        if (MaterialConfigLoader::isConfigStyle(path)) {
-            auto material = MaterialConfigLoader::getMaterialFromPath(nullptr, path);
-
-            return material;
+        if (MaterialConfigLoader::isConfigStyle(filePath)) {
+            return MaterialConfigLoader::getMaterialFromPath(nullptr, filePath);
         }
     }
 
@@ -442,18 +436,6 @@ bool MaterialManagerLocal::isMaterial(const fs::path& p) const
     return false;
 }
 
-bool MaterialManagerLocal::isMaterial(const QFileInfo& file) const
-{
-    if (!file.isFile()) {
-        return false;
-    }
-    // check file extension
-    if (file.suffix() == "FCMat") {
-        return true;
-    }
-    return false;
-}
-
 std::shared_ptr<std::map<std::string, std::shared_ptr<Material>>>
 MaterialManagerLocal::materialsWithModel(const std::string& uuid) const
 {
@@ -522,9 +504,11 @@ MaterialManagerLocal::getConfiguredLibraries()
     bool useMatFromConfigDir = param->GetBool("UseMaterialsFromConfigDir", true);
     bool useMatFromCustomDir = param->GetBool("UseMaterialsFromCustomDir", true);
 
+    const auto& directories = App::Application::directories();
+
     if (useBuiltInMaterials) {
-        const std::string resourceDir =
-            App::Application::getResourceDir() + "/Mod/Material/Resources/Materials";
+        const fs::path resourceDir =
+            directories->getResourceDir() / "Mod/Material/Resources/Materials";
         auto libData =
             std::make_shared<MaterialLibraryLocal>("System",
                                                    resourceDir,
@@ -537,56 +521,49 @@ MaterialManagerLocal::getConfiguredLibraries()
         auto moduleParam = App::GetApplication().GetParameterGroupByPath(
             "User parameter:BaseApp/Preferences/Mod/Material/Resources/Modules");
         for (auto& group : moduleParam->GetGroups()) {
-            // auto module = moduleParam->GetGroup(group->GetGroupName());
             auto moduleName = group->GetGroupName();
-            auto materialDir = group->GetASCII("ModuleDir", "");
+            const fs::path materialDir = Materials::pathFromUtf8(group->GetASCII("ModuleDir", ""));
             auto materialIcon = group->GetASCII("ModuleIcon", "");
             auto materialReadOnly = group->GetBool("ModuleReadOnly", true);
 
-            if (!materialDir.empty()) {
-                if (QDir(QString::fromStdString(materialDir)).exists()) {
-                    auto libData = std::make_shared<MaterialLibraryLocal>(moduleName,
-                                                                          materialDir,
-                                                                          materialIcon,
-                                                                          materialReadOnly);
-                    libraryList->push_back(libData);
-                }
+            if (fs::is_directory(materialDir)) {
+                auto libData = std::make_shared<MaterialLibraryLocal>(moduleName,
+                                                                      materialDir,
+                                                                      materialIcon,
+                                                                      materialReadOnly);
+                libraryList->push_back(libData);
             }
         }
     }
 
     if (useMatFromConfigDir) {
-        const std::string resourceDir = App::Application::getUserAppDataDir() + "/Material";
-        if (!resourceDir.empty()) {
-            QDir materialDir(QString::fromStdString(resourceDir));
-            if (!materialDir.exists()) {
-                // Try creating the user dir if it doesn't exist
-                if (!materialDir.mkpath(QString::fromStdString(resourceDir))) {
-                    Base::Console().log("Unable to create user library '{}'\n", resourceDir);
-                }
-            }
-            if (materialDir.exists()) {
-                auto libData = std::make_shared<MaterialLibraryLocal>(
-                    "User",
-                    resourceDir,
-                    ":/icons/preferences-general.svg",
-                    false);
-                libraryList->push_back(libData);
-            }
+        const fs::path resourceDir = directories->getUserAppDataDir() / "Material";
+        // Try creating the user dir if it doesn't exist
+        std::error_code ec;
+        fs::create_directories(resourceDir, ec);
+        if (fs::is_directory(resourceDir)) {
+            auto libData = std::make_shared<MaterialLibraryLocal>(
+                "User",
+                resourceDir,
+                ":/icons/preferences-general.svg",
+                false);
+            libraryList->push_back(libData);
+        }
+        else {
+            Base::Console().log("Unable to create user library '{}'\n",
+                                Materials::pathToPortableUtf8(resourceDir));
         }
     }
 
     if (useMatFromCustomDir) {
-        const std::string resourceDir = param->GetASCII("CustomMaterialsDir", "");
-        if (!resourceDir.empty()) {
-            if (QDir(QString::fromStdString(resourceDir)).exists()) {
-                auto libData = std::make_shared<MaterialLibraryLocal>(
-                    "Custom",
-                    resourceDir,
-                    ":/icons/user.svg",
-                    false);
-                libraryList->push_back(libData);
-            }
+        const fs::path resourceDir = Materials::pathFromUtf8(param->GetASCII("CustomMaterialsDir", ""));
+        if (fs::is_directory(resourceDir)) {
+            auto libData = std::make_shared<MaterialLibraryLocal>(
+                "Custom",
+                resourceDir,
+                ":/icons/user.svg",
+                false);
+            libraryList->push_back(libData);
         }
     }
 

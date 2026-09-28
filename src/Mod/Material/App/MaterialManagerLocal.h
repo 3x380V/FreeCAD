@@ -36,8 +36,6 @@
 
 namespace fs = std::filesystem;
 
-class QFileInfo;
-
 namespace App
 {
 class Material;
@@ -68,7 +66,7 @@ public:
     std::shared_ptr<std::list<std::shared_ptr<MaterialLibrary>>> getMaterialLibraries();
     std::shared_ptr<MaterialLibrary> getLibrary(const std::string& name) const;
     void createLibrary(const std::string& libraryName,
-                       const std::string& directory,
+                       const fs::path& directory,
                        const std::string& iconPath,
                        bool readOnly = true);
     void renameLibrary(const std::string& libraryName, const std::string& newName);
@@ -107,7 +105,6 @@ public:
                       bool saveInherited) const;
 
     bool isMaterial(const fs::path& p) const;
-    bool isMaterial(const QFileInfo& file) const;
 
     std::shared_ptr<std::map<std::string, std::shared_ptr<Material>>>
     materialsWithModel(const std::string& uuid) const;

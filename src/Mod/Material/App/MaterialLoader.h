@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <list>
 #include <memory>
 
@@ -43,7 +44,7 @@ public:
     MaterialEntry() = default;
     MaterialEntry(const std::shared_ptr<MaterialLibraryLocal>& library,
                   const std::string& modelName,
-                  const std::string& dir,
+                  const std::filesystem::path& path,
                   const std::string& modelUuid);
     virtual ~MaterialEntry() = default;
 
@@ -58,9 +59,9 @@ public:
     {
         return _name;
     }
-    const std::string& getDirectory() const
+    const std::filesystem::path& getPath() const
     {
-        return _directory;
+        return _path;
     }
     const std::string& getUUID() const
     {
@@ -70,7 +71,7 @@ public:
 protected:
     std::shared_ptr<MaterialLibraryLocal> _library;
     std::string _name;
-    std::string _directory;
+    std::filesystem::path _path;
     std::string _uuid;
 };
 
@@ -79,7 +80,7 @@ class MaterialYamlEntry: public MaterialEntry
 public:
     MaterialYamlEntry(const std::shared_ptr<MaterialLibraryLocal>& library,
                       const std::string& modelName,
-                      const std::string& dir,
+                      const std::filesystem::path& path,
                       const std::string& modelUuid,
                       const YAML::Node& modelData);
     ~MaterialYamlEntry() override = default;
@@ -125,7 +126,7 @@ public:
     static std::shared_ptr<MaterialEntry>
     getMaterialFromYAML(const std::shared_ptr<MaterialLibraryLocal>& library,
                         YAML::Node& yamlroot,
-                        const std::string& path);
+                        const std::filesystem::path& path);
 
 private:
     MaterialLoader();
@@ -133,7 +134,8 @@ private:
     void addToTree(std::shared_ptr<MaterialEntry> model);
     void dereference(const std::shared_ptr<Material>& material);
     std::shared_ptr<MaterialEntry>
-    getMaterialFromPath(const std::shared_ptr<MaterialLibraryLocal>& library, const std::string& path) const;
+    getMaterialFromPath(const std::shared_ptr<MaterialLibraryLocal>& library,
+                        const std::filesystem::path& path) const;
     void addLibrary(const std::shared_ptr<MaterialLibraryLocal>& model);
     void loadLibrary(const std::shared_ptr<MaterialLibraryLocal>& library);
     void loadLibraries(

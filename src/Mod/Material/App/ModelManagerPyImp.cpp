@@ -21,6 +21,7 @@
  *                                                                         *
  **************************************************************************/
 
+#include "PathUtils.h"
 
 #include "Model.h"
 #include "ModelLibrary.h"
@@ -124,7 +125,7 @@ Py::List ModelManagerPy::getModelLibraries() const
         auto lib = *it;
         Py::Tuple libTuple(4);
         libTuple.setItem(0, Py::String(lib->getName()));
-        libTuple.setItem(1, Py::String(lib->getDirectoryPath()));
+        libTuple.setItem(1, Py::String(Materials::pathToPortableUtf8(lib->getDirectory())));
         libTuple.setItem(2, bytesFromIconData(lib->loadIconData()));
         libTuple.setItem(3, Py::Boolean(lib->isReadOnly()));
 
@@ -143,7 +144,7 @@ Py::List ModelManagerPy::getLocalModelLibraries() const
         auto lib = *it;
         Py::Tuple libTuple(4);
         libTuple.setItem(0, Py::String(lib->getName()));
-        libTuple.setItem(1, Py::String(lib->getDirectoryPath()));
+        libTuple.setItem(1, Py::String(Materials::pathToPortableUtf8(lib->getDirectory())));
         libTuple.setItem(2, bytesFromIconData(lib->loadIconData()));
         libTuple.setItem(3, Py::Boolean(lib->isReadOnly()));
 
