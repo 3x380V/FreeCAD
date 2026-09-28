@@ -33,12 +33,12 @@
 #include <QSettings>
 #include <QString>
 #include <QTextStream>
-#include <QUuid>
 
 
 
 #include <App/Application.h>
 #include <Base/Interpreter.h>
+#include <Base/Uuid.h>
 
 
 #include "Exceptions.h"
@@ -1051,7 +1051,7 @@ MaterialConfigLoader::getMaterialFromPath(const std::shared_ptr<MaterialLibraryL
                            .fileName()
                            .remove(QLatin1String(".FCMat"), Qt::CaseInsensitive)
                            .toStdString();
-    std::string uuid = QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString();
+    std::string uuid = Base::Uuid::createUuid();
 
     std::string description = value(fcmat, "Description", "");
     std::string sourceReference = value(fcmat, "ReferenceSource", "");
