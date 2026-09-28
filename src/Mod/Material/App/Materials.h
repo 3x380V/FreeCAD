@@ -25,13 +25,11 @@
 
 #include <map>
 #include <memory>
+#include <ostream>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <QString>
-#include <QTextStream>
 
 #include <App/Application.h>
 #include <Base/Color.h>
@@ -136,7 +134,7 @@ public:
     void setColor(const Base::Color& value);
 
     MaterialProperty& operator=(const MaterialProperty& other);
-    friend QTextStream& operator<<(QTextStream& output, const MaterialProperty& property);
+    friend std::ostream& operator<<(std::ostream& output, const MaterialProperty& property);
 
     bool operator==(const MaterialProperty& other) const;
     bool operator!=(const MaterialProperty& other) const
@@ -417,7 +415,7 @@ public:
      */
     void inheritedPropertyDiff(const std::string& parent);
 
-    void save(QTextStream& stream, bool overwrite, bool saveAsCopy, bool saveInherited);
+    void save(std::ostream& stream, bool overwrite, bool saveAsCopy, bool saveInherited);
 
     /*
      * Assignment operator
@@ -454,10 +452,10 @@ protected:
                       const Model& model) const;
     bool modelAppearanceChanged(const Material& parent,
                                 const Model& model) const;
-    void saveGeneral(QTextStream& stream) const;
-    void saveInherits(QTextStream& stream) const;
-    void saveModels(QTextStream& stream, bool saveInherited) const;
-    void saveAppearanceModels(QTextStream& stream, bool saveInherited) const;
+    void saveGeneral(std::ostream& stream) const;
+    void saveInherits(std::ostream& stream) const;
+    void saveModels(std::ostream& stream, bool saveInherited) const;
+    void saveAppearanceModels(std::ostream& stream, bool saveInherited) const;
 
 private:
     std::shared_ptr<MaterialLibrary> _library;
@@ -483,10 +481,9 @@ private:
     ModelEdit _editState;
 };
 
-inline QTextStream& operator<<(QTextStream& output, const MaterialProperty& property)
+inline std::ostream& operator<<(std::ostream& output, const MaterialProperty& property)
 {
-    output << QString::fromStdString(MaterialValue::escapeString(property.getName())) << ":"
-           << QString::fromStdString(property.getYAMLString());
+    output << MaterialValue::escapeString(property.getName()) << ":" << property.getYAMLString();
     return output;
 }
 
