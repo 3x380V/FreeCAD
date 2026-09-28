@@ -77,7 +77,7 @@ public:
     std::shared_ptr<std::list<std::shared_ptr<MaterialLibrary>>> getLocalLibraries();
     std::shared_ptr<MaterialLibrary> getLibrary(const std::string& name) const;
     void createLibrary(const std::string& libraryName,
-                       const std::string& iconPath,
+                       const IconData& icon,
                        bool readOnly = true);
     void createLocalLibrary(const std::string& libraryName,
                             const std::string& directory,
@@ -147,7 +147,8 @@ public:
     void OnChange(ParameterGrp::SubjectType& rCaller, ParameterGrp::MessageType Reason) override;
 
 #if defined(BUILD_MATERIAL_EXTERNAL)
-    void migrateToExternal(const std::shared_ptr<Materials::MaterialLibrary>& library);
+    void migrateToExternal(const std::shared_ptr<Materials::MaterialLibrary>& library,
+                           const IconData& icon);
     void validateMigration(const std::shared_ptr<Materials::MaterialLibrary>& library);
 
     // Cache functions

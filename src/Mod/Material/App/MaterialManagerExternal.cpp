@@ -127,7 +127,7 @@ std::shared_ptr<MaterialLibrary> MaterialManagerExternal::getLibrary(const std::
 }
 
 void MaterialManagerExternal::createLibrary(const std::string& libraryName,
-                                            const QByteArray& icon,
+                                            const IconData& icon,
                                             bool readOnly)
 {
     ExternalManager::getManager()->createLibrary(libraryName, icon, readOnly);
@@ -138,7 +138,7 @@ void MaterialManagerExternal::renameLibrary(const std::string& libraryName, cons
     ExternalManager::getManager()->renameLibrary(libraryName, newName);
 }
 
-void MaterialManagerExternal::changeIcon(const std::string& libraryName, const QByteArray& icon)
+void MaterialManagerExternal::changeIcon(const std::string& libraryName, const IconData& icon)
 {
     ExternalManager::getManager()->changeIcon(libraryName, icon);
 }

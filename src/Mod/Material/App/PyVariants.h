@@ -27,6 +27,7 @@
 
 #include <Mod/Material/MaterialGlobal.h>
 
+#include "Library.h"
 #include "MaterialValue.h"
 
 namespace Materials
@@ -35,5 +36,7 @@ namespace Materials
 /// A new reference to the Python object holding \a value
 extern MaterialsExport PyObject* pyObjectFromValue(const Value& value);
 extern MaterialsExport Py::List getList(const ValueList& value);
+/// The icon bytes as a Python bytes object
+extern MaterialsExport Py::Bytes bytesFromIconData(const IconData& icon);
 
 }  // namespace Materials

@@ -24,7 +24,10 @@ class MaterialLibrary(BaseClass):
     """Name of the library"""
 
     Icon: bytes = ...
-    """Icon as an array of bytes."""
+    """Icon as an array of bytes. Reading a library icon given as a Qt resource path yields nothing."""
+
+    IconPath: str = ...
+    """File or Qt resource path of the icon, empty when the icon was given as bytes."""
 
     Directory: str = ...
     """Local directory where the library is located. For non-local libraries this will be empty"""

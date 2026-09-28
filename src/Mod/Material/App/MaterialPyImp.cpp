@@ -94,11 +94,7 @@ Py::Object MaterialPy::getLibraryIcon() const
         if (!materialLibrary) {
             return Py::Bytes();
         }
-        auto icon = materialLibrary->getIcon();
-        if (icon.isNull()) {
-            return Py::Bytes();
-        }
-        return Py::Bytes(icon.data(), icon.size());
+        return bytesFromIconData(materialLibrary->loadIconData());
     }
     return Py::Bytes();
 }

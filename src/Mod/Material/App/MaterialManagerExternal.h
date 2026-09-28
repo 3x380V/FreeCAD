@@ -66,10 +66,10 @@ public:
     std::shared_ptr<std::list<std::shared_ptr<MaterialLibrary>>> getMaterialLibraries();
     std::shared_ptr<MaterialLibrary> getLibrary(const std::string& name) const;
     void createLibrary(const std::string& libraryName,
-                       const QByteArray& icon,
+                       const IconData& icon,
                        bool readOnly = true);
     void renameLibrary(const std::string& libraryName, const std::string& newName);
-    void changeIcon(const std::string& libraryName, const QByteArray& icon);
+    void changeIcon(const std::string& libraryName, const IconData& icon);
     void removeLibrary(const std::string& libraryName);
     std::shared_ptr<std::vector<LibraryObject>>
     libraryMaterials(const std::string& libraryName);
