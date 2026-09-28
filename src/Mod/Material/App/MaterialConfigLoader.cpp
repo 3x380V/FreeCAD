@@ -22,22 +22,22 @@
  **************************************************************************/
 
 #include <fstream>
+#include <istream>
 #include <map>
 #include <memory>
 #include <string>
 
 #include <QDirIterator>
-#include <QFile>
 #include <QFileInfo>
-#include <QIODevice>
-#include <QSettings>
 #include <QString>
-#include <QTextStream>
 
 
 
 #include <App/Application.h>
+#include <Base/FileInfo.h>
 #include <Base/Interpreter.h>
+#include <Base/Stream.h>
+#include <Base/StringUtils.h>
 #include <Base/Uuid.h>
 
 
@@ -52,76 +52,92 @@
 
 using namespace Materials;
 
-bool MaterialConfigLoader::isConfigStyle(const std::string& path)
+namespace
 {
-    QSettings fcmat(QString::fromStdString(path), QSettings::IniFormat);
 
-    // No [sections] means not .ini
-    if (fcmat.childGroups().empty()) {
+/// Read a line, dropping a trailing carriage return and a leading byte order mark
+bool readLine(std::istream& in, std::string& line)
+{
+    if (!std::getline(in, line)) {
         return false;
     }
-
-    // Sometimes arrays can create a false positive
-    QFile infile(QString::fromStdString(path));
-    if (infile.open(QIODevice::ReadOnly)) {
-        QTextStream in(&infile);
-
-        if (!in.atEnd()) {
-            auto line = in.readLine();
-            if (line.trimmed().startsWith(QLatin1Char('-'))
-                || line.trimmed().startsWith(QLatin1Char('#'))) {
-                // Definitely a YAML file
-                return false;
-            }
-        }
+    if (line.ends_with('\r')) {
+        line.pop_back();
     }
-    infile.close();
-
-    // No false positive
+    if (line.starts_with("\xEF\xBB\xBF")) {
+        line.erase(0, 3);
+    }
     return true;
 }
 
-bool MaterialConfigLoader::readFile(const std::string& path,
-                                   std::map<std::string, std::string>& map)
+}  // namespace
+
+bool MaterialConfigLoader::isConfigStyle(const std::string& path)
 {
-    // This function is necessary as the built in routines don't always return the full value string
-    QFile infile(QString::fromStdString(path));
-    if (infile.open(QIODevice::ReadOnly)) {
-        QTextStream in(&infile);
-        QString line;
-        std::string prefix;
-        while (!in.atEnd()) {
-            line = in.readLine();
-            if (line.trimmed().startsWith(QLatin1Char(';'))) {
-                continue;
-            }
-
-            if (line.startsWith(QLatin1Char('['))) {
-                // read prefix
-                auto end = line.indexOf(QLatin1Char(']'));
-                if (end > 1) {
-                    prefix = line.mid(1, end - 1).toStdString() + "/";
-
-                    // Render WB uses both Render and Rendering
-                    if (prefix == "Rendering/") {
-                        prefix = "Render/";
-                    }
-                }
-            }
-            else {
-                auto separator = line.indexOf(QLatin1Char('='));
-                if (separator > 2) {
-                    auto left = line.mid(0, separator - 1);
-                    auto right = line.mid(separator + 2);
-                    map[prefix + left.toStdString()] = right.toStdString();
-                }
+    Base::ifstream infile {Base::FileInfo(path)};
+    std::string line;
+    bool inSection = false;
+    for (bool first = true; readLine(infile, line); first = false) {
+        const std::string trimmed = Base::StringUtils::trimmed(line);
+        if (first && (trimmed.starts_with('-') || trimmed.starts_with('#'))) {
+            // Definitely a YAML file
+            return false;
+        }
+        if (trimmed.starts_with('[') && trimmed.ends_with(']')) {
+            // A [section] header, but YAML arrays look the same
+            inSection = true;
+        }
+        else if (inSection) {
+            // A section holding a "key = value" line means .ini
+            const auto separator = trimmed.find('=');
+            if (separator != std::string::npos && trimmed.find(':') > separator) {
+                return true;
             }
         }
-        infile.close();
-        return true;
     }
 
     return false;
+}
+
+bool MaterialConfigLoader::readFile(const std::string& path, std::map<std::string, std::string>& map)
+{
+    // This function is necessary as the built in routines don't always return the full value string
+    Base::ifstream infile {Base::FileInfo(path)};
+    if (!infile) {
+        return false;
+    }
+
+    std::string line;
+    std::string prefix;
+    while (readLine(infile, line)) {
+        if (Base::StringUtils::trimmed(line).starts_with(';')) {
+            continue;
+        }
+
+        if (line.starts_with('[')) {
+            // read prefix
+            const auto end = line.find(']');
+            if (end != std::string::npos && end > 1) {
+                prefix = line.substr(1, end - 1) + "/";
+
+                // Render WB uses both Render and Rendering
+                if (prefix == "Rendering/") {
+                    prefix = "Render/";
+                }
+            }
+        }
+        else {
+            const auto separator = line.find('=');
+            if (separator != std::string::npos && separator > 2) {
+                const std::string left = line.substr(0, separator - 1);
+                const std::string right =
+                    separator + 2 <= line.size() ? line.substr(separator + 2) : std::string();
+                map[prefix + left] = right;
+            }
+        }
+    }
+
+    return true;
 }
 
 void MaterialConfigLoader::splitTexture(const std::string& value,
@@ -165,7 +181,7 @@ void MaterialConfigLoader::splitTextureObject(const std::string& value,
 
 std::string MaterialConfigLoader::getAuthorAndLicense(const std::string& path)
 {
-    std::ifstream infile(path);
+    Base::ifstream infile {Base::FileInfo(path)};
     const std::string noAuthor;
 
     // Skip the first line
