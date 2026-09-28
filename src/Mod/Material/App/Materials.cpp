@@ -42,17 +42,6 @@
 
 using namespace Materials;
 
-namespace Materials
-{
-
-// Bridge until the material files are written without Qt
-static QTextStream& operator<<(QTextStream& stream, const std::string& text)
-{
-    return stream << QString::fromStdString(text);
-}
-
-}  // namespace Materials
-
 /* TRANSLATOR Material::Materials */
 
 TYPESYSTEM_SOURCE(Materials::MaterialProperty, Materials::ModelProperty)
@@ -1331,7 +1320,7 @@ bool Material::isAppearanceModelComplete(const std::string& uuid) const
     return true;
 }
 
-void Material::saveGeneral(QTextStream& stream) const
+void Material::saveGeneral(std::ostream& stream) const
 {
     stream << "General:\n";
     stream << "  UUID: \"" << _uuid << "\"\n";
@@ -1359,7 +1348,7 @@ void Material::saveGeneral(QTextStream& stream) const
     }
 }
 
-void Material::saveInherits(QTextStream& stream) const
+void Material::saveInherits(std::ostream& stream) const
 {
     if (!_parentUuid.empty()) {
         try {
@@ -1416,7 +1405,7 @@ bool Material::modelAppearanceChanged(const Material& parent,
     return false;
 }
 
-void Material::saveModels(QTextStream& stream, bool saveInherited) const
+void Material::saveModels(std::ostream& stream, bool saveInherited) const
 {
     if (_physical.empty()) {
         return;
@@ -1470,7 +1459,7 @@ void Material::saveModels(QTextStream& stream, bool saveInherited) const
     }
 }
 
-void Material::saveAppearanceModels(QTextStream& stream, bool saveInherited) const
+void Material::saveAppearanceModels(std::ostream& stream, bool saveInherited) const
 {
     if (_appearance.empty()) {
         return;
@@ -1545,7 +1534,7 @@ std::string Material::getModelByName(const std::string& name) const
     return {};
 }
 
-void Material::save(QTextStream& stream, bool overwrite, bool saveAsCopy, bool saveInherited)
+void Material::save(std::ostream& stream, bool overwrite, bool saveAsCopy, bool saveInherited)
 {
     if (saveInherited && !saveAsCopy) {
         // Check to see if we're an original or if we're already in the list of

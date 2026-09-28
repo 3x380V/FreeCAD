@@ -22,6 +22,8 @@
  **************************************************************************/
 
 
+#include <string_view>
+
 #include "Exceptions.h"
 #include "MaterialFilter.h"
 #include "MaterialFilterPy.h"
@@ -261,7 +263,7 @@ PyObject* MaterialManagerPy::save(PyObject* args, PyObject* kwds)
     Base::Console().log("path {}\n", path);
 
     MaterialPy* material;
-    if (QLatin1String(obj->ob_type->tp_name) == "Materials.Material") {
+    if (std::string_view(obj->ob_type->tp_name) == "Materials.Material") {
         material = static_cast<MaterialPy*>(obj);
     }
     else {
