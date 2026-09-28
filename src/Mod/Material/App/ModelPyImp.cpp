@@ -22,6 +22,8 @@
  **************************************************************************/
 
 
+#include "PathUtils.h"
+
 #include "Model.h"
 #include "ModelLibrary.h"
 #include "ModelPropertyPy.h"
@@ -66,7 +68,7 @@ Py::String ModelPy::getLibraryRoot() const
     if (!library->isLocal()) {
         return "";
     }
-    return Py::String(library ? library->getDirectoryPath() : "");
+    return Py::String(library ? Materials::pathToPortableUtf8(library->getDirectory()) : "");
 }
 
 Py::Object ModelPy::getLibraryIcon() const

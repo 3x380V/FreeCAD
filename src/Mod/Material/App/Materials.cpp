@@ -26,8 +26,6 @@
 #include <string>
 #include <utility>
 
-#include <QDir>
-
 #include <App/Application.h>
 #include <Base/StringUtils.h>
 #include <Base/Uuid.h>
@@ -38,7 +36,6 @@
 #include "MaterialManager.h"
 #include "ModelManager.h"
 #include "ModelUuids.h"
-
 
 using namespace Materials;
 
@@ -176,7 +173,6 @@ Base::Color MaterialProperty::getColor() const
     Base::Color color(red, green, blue, alpha);
     return color;
 }
-
 
 std::string MaterialProperty::getDictionaryString() const
 {
@@ -581,13 +577,6 @@ void Material::setFilename(std::string filename)
     _filename = std::move(filename);
 }
 
-std::string Material::getFilePath() const
-{
-    return QDir(QString::fromStdString(_directory + "/" + _filename))
-        .absolutePath()
-        .toStdString();
-}
-
 std::string Material::getAuthorAndLicense() const
 {
     // Combine the author and license field for backwards compatibility
@@ -944,7 +933,6 @@ void Material::setPhysicalValue(const std::string& name, const std::shared_ptr<M
     }
 }
 
-
 void Material::setPhysicalValue(const std::string& name, const ValueList& value)
 {
     setPhysicalEditState(name);
@@ -979,7 +967,6 @@ void Material::setAppearanceValue(const std::string& name, const std::shared_ptr
         _appearance[name]->setValue(value);
     }
 }
-
 
 void Material::setAppearanceValue(const std::string& name, const ValueList& value)
 {

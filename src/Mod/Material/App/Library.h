@@ -24,6 +24,9 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
+#include <functional>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -40,6 +43,14 @@ using IconData = std::vector<std::byte>;
 /**
  * A material or model library.
  *
+ * Two kinds of paths are used throughout the material code:
+ *  - library paths are '/' separated strings such as "/System/Metal/Steel.FCMat",
+ *    optionally prefixed with the library name. They name entries inside a
+ *    library and never depend on the operating system.
+ *  - file system paths are std::filesystem::path values and only exist for
+ *    local libraries.
+ * Library converts between the two.
+ *
  * The icon of a library is a reference: a file or Qt resource path that the
  * Gui resolves. Icon bytes are provided only by remote libraries and Python.
  */
@@ -53,7 +64,7 @@ public:
     Library(const std::string& libraryName, const std::string& icon, bool readOnly = true);
     Library(const std::string& libraryName, IconData icon, bool readOnly);
     Library(const std::string& libraryName,
-            const std::string& dir,
+            const std::filesystem::path& dir,
             const std::string& iconPath,
             bool readOnly = true);
     ~Library() override = default;
@@ -102,9 +113,12 @@ public:
         _readOnly = readOnly;
     }
 
-    const std::string& getDirectory() const;
-    void setDirectory(const std::string& directory);
-    std::string getDirectoryPath() const;
+    /// The file system directory of a local library, empty for remote ones
+    const std::filesystem::path& getDirectory() const
+    {
+        return _directory;
+    }
+    void setDirectory(const std::filesystem::path& directory);
 
     bool operator==(const Library& library) const;
     bool operator!=(const Library& library) const
@@ -112,33 +126,45 @@ public:
         return !operator==(library);
     }
 
-    std::string getLocalPath(const std::string& path) const;
+    /// The file system location of the library path \a path
+    std::filesystem::path getLocalPath(const std::string& path) const;
+    /// The library path of \a path, relative to the library root
     std::string getRelativePath(const std::string& path) const;
+    /// The library path of the file system path \a path, relative to the library root
+    std::string getRelativePath(const std::filesystem::path& path) const;
     std::string getLibraryPath(const std::string& path, const std::string& filename) const;
     bool isRoot(const std::string& path) const;
 
     // Validate a remote library against this one (a local library)
     void validate(const Library& remote) const;
 
-    static std::string canonical(const std::string& path);
+    /// Normalize a library path, removing empty, "." and ".." components
     static std::string cleanPath(const std::string& path);
     /// Split \a text on \a separator, keeping empty parts
     static std::vector<std::string> split(const std::string& text, char separator);
 
-    /// Does \a path start with this library's directory, as the file system compares names?
-    bool startsWithDirectory(const std::string& path) const;
+    /// Is the file system path \a path inside this library's directory?
+    bool startsWithDirectory(const std::filesystem::path& path) const;
+
+    /// Does the last component of \a path start with a dot?
+    static bool isHidden(const std::filesystem::path& path);
+    /// Call \a callback for every entry below \a directory, skipping hidden ones
+    static void
+    forEachEntry(const std::filesystem::path& directory,
+                 const std::function<void(const std::filesystem::directory_entry&)>& callback);
 
 private:
+    /// \a path relative to the library directory, or nothing when it is outside of it
+    std::optional<std::filesystem::path>
+    relativeToDirectory(const std::filesystem::path& path) const;
+
     std::string _name;
-    std::string _directory;
+    std::filesystem::path _directory;
     std::string _iconPath;
     IconData _iconData;
     bool _readOnly;
-    bool _caseSensitive;
 
     bool _local;
-
-    void setCaseSensitivity();
 };
 
 class MaterialsExport LibraryObject

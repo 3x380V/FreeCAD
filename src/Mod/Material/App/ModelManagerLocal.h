@@ -23,12 +23,12 @@
 
 #pragma once
 
+#include <filesystem>
 #include <list>
 #include <memory>
 #include <mutex>
 
 #include <Mod/Material/MaterialGlobal.h>
-
 
 #include "Exceptions.h"
 #include "FolderTree.h"
@@ -51,7 +51,7 @@ public:
 
     std::shared_ptr<std::list<std::shared_ptr<ModelLibrary>>> getLibraries();
     void createLibrary(const std::string& libraryName,
-                       const std::string& directory,
+                       const std::filesystem::path& directory,
                        const std::string& icon,
                        bool readOnly = true);
     void renameLibrary(const std::string& libraryName, const std::string& newName);

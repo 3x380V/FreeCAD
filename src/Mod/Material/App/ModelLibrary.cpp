@@ -22,9 +22,8 @@
  **************************************************************************/
 
 #include <string>
-#include <QLatin1Char>
+#include <filesystem>
 
-#include <QFileInfo>
 
 #include <App/Application.h>
 
@@ -33,6 +32,8 @@
 #include "ModelLibrary.h"
 #include "ModelManager.h"
 
+
+namespace fs = std::filesystem;
 
 using namespace Materials;
 
@@ -43,7 +44,7 @@ ModelLibrary::ModelLibrary(const Library& other)
 {}
 
 ModelLibrary::ModelLibrary(const std::string& libraryName,
-                           const std::string& dir,
+                           const fs::path& dir,
                            const std::string& iconPath,
                            bool readOnly)
     : Library(libraryName, dir, iconPath, readOnly)
@@ -106,7 +107,7 @@ ModelLibraryLocal::ModelLibraryLocal(const Library& other)
 }
 
 ModelLibraryLocal::ModelLibraryLocal(const std::string& libraryName,
-                                     const std::string& dir,
+                                     const fs::path& dir,
                                      const std::string& iconPath,
                                      bool readOnly)
     : ModelLibrary(libraryName, dir, iconPath, readOnly)
@@ -125,7 +126,16 @@ ModelLibraryLocal::ModelLibraryLocal()
 
 std::shared_ptr<Model> ModelLibraryLocal::getModelByPath(const std::string& path) const
 {
-    const std::string filePath = getRelativePath(path);
+    return findModel(getRelativePath(path));
+}
+
+std::shared_ptr<Model> ModelLibraryLocal::getModelByPath(const fs::path& file) const
+{
+    return findModel(getRelativePath(file));
+}
+
+std::shared_ptr<Model> ModelLibraryLocal::findModel(const std::string& filePath) const
+{
     try {
         std::shared_ptr<Model> model = _modelPathMap->at(filePath);
         return model;
@@ -135,17 +145,14 @@ std::shared_ptr<Model> ModelLibraryLocal::getModelByPath(const std::string& path
     }
 }
 
-std::shared_ptr<Model> ModelLibraryLocal::addModel(const Model& model, const std::string& path)
+std::shared_ptr<Model> ModelLibraryLocal::addModel(const Model& model, const fs::path& file)
 {
-    const std::string filePath = getRelativePath(path);
-    const std::string filename =
-        QFileInfo(QString::fromStdString(filePath)).fileName().toStdString();
+    const std::string filePath = getRelativePath(file);
+    const std::string filename = filePath.substr(filePath.rfind('/') + 1);
     std::shared_ptr<Model> newModel = std::make_shared<Model>(model);
     newModel->setLibrary(getptr());
     newModel->setDirectory(getLibraryPath(filePath, filename));
     newModel->setFilename(filename);
-
     (*_modelPathMap)[filePath] = newModel;
-
     return newModel;
 }

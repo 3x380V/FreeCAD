@@ -28,6 +28,7 @@
 
 
 #include <App/Document.h>
+#include <Mod/Material/App/PathUtils.h>
 #include <Gui/Application.h>
 #include <Gui/BitmapFactory.h>
 #include <Gui/Document.h>
@@ -270,7 +271,7 @@ void DlgInspectMaterial::addModelDetails(QTreeView* tree,
     addExpanded(tree, parent, library);
 
     auto libraryPath =
-        clipItem(tr("Library directory: ") + QString::fromStdString(model->getLibrary()->getDirectoryPath()));
+        clipItem(tr("Library directory: ") + QString::fromStdString(Materials::pathToPortableUtf8(model->getLibrary()->getDirectory())));
     addExpanded(tree, parent, libraryPath);
 
     auto directory = clipItem(tr("Subdirectory: ") + QString::fromStdString(model->getDirectory()));
@@ -343,7 +344,7 @@ void DlgInspectMaterial::addMaterialDetails(QTreeView* tree,
     auto library =
         clipItem(tr("Library: ") + QString::fromStdString(material.getLibrary()->getName()));
     addExpanded(tree, parent, library);
-    auto libraryPath = clipItem(tr("Library directory: ") + QString::fromStdString(material.getLibrary()->getDirectoryPath()));
+    auto libraryPath = clipItem(tr("Library directory: ") + QString::fromStdString(Materials::pathToPortableUtf8(material.getLibrary()->getDirectory())));
     addExpanded(tree, parent, libraryPath);
     auto directory = clipItem(tr("Sub directory: ") + QString::fromStdString(material.getDirectory()));
     addExpanded(tree, parent, directory);

@@ -112,6 +112,8 @@ SET(Materials_SRCS
     ModelManagerLocal.h
     ModelUuids.cpp
     ModelUuids.h
+    PathUtils.cpp
+    PathUtils.h
     PreCompiled.h
     PropertyMaterial.cpp
     PropertyMaterial.h

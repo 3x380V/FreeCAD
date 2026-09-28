@@ -21,25 +21,18 @@
  *                                                                         *
  **************************************************************************/
 
+#include <filesystem>
 #include <fstream>
 #include <istream>
 #include <map>
 #include <memory>
 #include <string>
 
-#include <QDirIterator>
-#include <QFileInfo>
-#include <QString>
-
-
-
 #include <App/Application.h>
-#include <Base/FileInfo.h>
 #include <Base/Interpreter.h>
-#include <Base/Stream.h>
+#include "PathUtils.h"
 #include <Base/StringUtils.h>
 #include <Base/Uuid.h>
-
 
 #include "Exceptions.h"
 #include "MaterialConfigLoader.h"
@@ -49,6 +42,7 @@
 #include "Model.h"
 #include "ModelUuids.h"
 
+namespace fs = std::filesystem;
 
 using namespace Materials;
 
@@ -72,9 +66,9 @@ bool readLine(std::istream& in, std::string& line)
 
 }  // namespace
 
-bool MaterialConfigLoader::isConfigStyle(const std::string& path)
+bool MaterialConfigLoader::isConfigStyle(const fs::path& path)
 {
-    Base::ifstream infile {Base::FileInfo(path)};
+    std::ifstream infile(path);
     std::string line;
     bool inSection = false;
     for (bool first = true; readLine(infile, line); first = false) {
@@ -99,10 +93,10 @@ bool MaterialConfigLoader::isConfigStyle(const std::string& path)
     return false;
 }
 
-bool MaterialConfigLoader::readFile(const std::string& path, std::map<std::string, std::string>& map)
+bool MaterialConfigLoader::readFile(const fs::path& path, std::map<std::string, std::string>& map)
 {
     // This function is necessary as the built in routines don't always return the full value string
-    Base::ifstream infile {Base::FileInfo(path)};
+    std::ifstream infile(path);
     if (!infile) {
         return false;
     }
@@ -179,9 +173,9 @@ void MaterialConfigLoader::splitTextureObject(const std::string& value,
     }
 }
 
-std::string MaterialConfigLoader::getAuthorAndLicense(const std::string& path)
+std::string MaterialConfigLoader::getAuthorAndLicense(const fs::path& path)
 {
-    Base::ifstream infile {Base::FileInfo(path)};
+    std::ifstream infile(path);
     const std::string noAuthor;
 
     // Skip the first line
@@ -1051,22 +1045,19 @@ void MaterialConfigLoader::addLegacy(const std::map<std::string, std::string>& f
 
 std::shared_ptr<Material>
 MaterialConfigLoader::getMaterialFromPath(const std::shared_ptr<MaterialLibraryLocal>& library,
-                                          const std::string& path)
+                                          const fs::path& path)
 {
     std::string author = getAuthorAndLicense(path);  // Place them both in the author field
 
     std::map<std::string, std::string> fcmat;
     if (!readFile(path, fcmat)) {
-        Base::Console().log("Error reading '{}'\n", path);
+        Base::Console().log("Error reading '{}'\n", Materials::pathToPortableUtf8(path));
         throw MaterialReadError();
     }
 
     // General section
     // QString name = value(fcmat, "Name", ""); - always get the name from the filename
-    std::string name = QFileInfo(QString::fromStdString(path))
-                           .fileName()
-                           .remove(QLatin1String(".FCMat"), Qt::CaseInsensitive)
-                           .toStdString();
+    std::string name = Materials::pathToPortableUtf8(path.stem());
     std::string uuid = Base::Uuid::createUuid();
 
     std::string description = value(fcmat, "Description", "");
@@ -1075,7 +1066,7 @@ MaterialConfigLoader::getMaterialFromPath(const std::shared_ptr<MaterialLibraryL
 
     auto baseLibrary = std::static_pointer_cast<Materials::MaterialLibrary>(library);
     std::shared_ptr<Material> finalModel =
-        std::make_shared<Material>(baseLibrary, path, uuid, name);
+        std::make_shared<Material>(baseLibrary, Materials::pathToPortableUtf8(path), uuid, name);
     finalModel->setOldFormat(true);
 
     finalModel->setAuthor(author);

@@ -23,9 +23,6 @@
 
 #include <random>
 
-
-#include <QDirIterator>
-
 #include <App/Application.h>
 #include <App/Material.h>
 
@@ -41,7 +38,6 @@
 #include "ModelUuids.h"
 
 #include <Base/Tools.h>
-
 
 using namespace Materials;
 
@@ -286,7 +282,7 @@ void MaterialManager::createLibrary([[maybe_unused]] const std::string& libraryN
 }
 
 void MaterialManager::createLocalLibrary(const std::string& libraryName,
-                                         const std::string& directory,
+                                         const fs::path& directory,
                                          const std::string& iconPath,
                                          bool readOnly)
 {
@@ -584,11 +580,6 @@ void MaterialManager::saveMaterial(const std::shared_ptr<MaterialLibrary>& libra
 bool MaterialManager::isMaterial(const fs::path& p) const
 {
     return _localManager->isMaterial(p);
-}
-
-bool MaterialManager::isMaterial(const QFileInfo& file) const
-{
-    return _localManager->isMaterial(file);
 }
 
 std::shared_ptr<std::map<std::string, std::shared_ptr<Material>>>

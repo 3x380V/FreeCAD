@@ -21,8 +21,6 @@
  *                                                                         *
  **************************************************************************/
 
-#include <QDirIterator>
-
 #include <App/Application.h>
 #include <Base/Console.h>
 
@@ -178,7 +176,7 @@ std::shared_ptr<ModelLibrary> ModelManager::getLibrary(const std::string& name) 
 }
 
 void ModelManager::createLocalLibrary(const std::string& libraryName,
-                                      const std::string& directory,
+                                      const std::filesystem::path& directory,
                                       const std::string& icon,
                                       bool readOnly)
 {

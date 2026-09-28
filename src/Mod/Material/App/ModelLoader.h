@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <list>
 #include <memory>
 
@@ -41,7 +42,7 @@ public:
     ModelEntry(const std::shared_ptr<ModelLibraryLocal>& library,
                const std::string& baseName,
                const std::string& modelName,
-               const std::string& dir,
+               const std::filesystem::path& path,
                const std::string& modelUuid,
                const YAML::Node& modelData);
     virtual ~ModelEntry() = default;
@@ -58,9 +59,9 @@ public:
     {
         return _name;
     }
-    const std::string& getDirectory() const
+    const std::filesystem::path& getPath() const
     {
-        return _directory;
+        return _path;
     }
     const std::string& getUUID() const
     {
@@ -90,7 +91,7 @@ private:
     std::shared_ptr<ModelLibraryLocal> _library;
     std::string _base;
     std::string _name;
-    std::string _directory;
+    std::filesystem::path _path;
     std::string _uuid;
     YAML::Node _model;
     bool _dereferenced;
@@ -121,7 +122,7 @@ private:
     void dereference(std::shared_ptr<ModelEntry> model,
                      std::map<std::pair<std::string, std::string>, std::string>* inheritances);
     std::shared_ptr<ModelEntry> getModelFromPath(std::shared_ptr<ModelLibrary> library,
-                                                 const std::string& path) const;
+                                                 const std::filesystem::path& path) const;
     void addLibrary(std::shared_ptr<ModelLibraryLocal> model);
     void loadLibrary(std::shared_ptr<ModelLibraryLocal> library);
     void loadLibraries();

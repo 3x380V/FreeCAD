@@ -21,13 +21,15 @@
  *                                                                         *
  **************************************************************************/
 
-#include <QDirIterator>
-#include <QFileInfo>
-#include <QString>
+#include <filesystem>
+#include <fstream>
+#include <system_error>
 
 #include <App/Application.h>
+#include <App/ApplicationDirectories.h>
 #include <Base/FileInfo.h>
 #include <Base/Interpreter.h>
+#include "PathUtils.h"
 #include <Base/Stream.h>
 
 
@@ -36,18 +38,20 @@
 #include "ModelManager.h"
 
 
+namespace fs = std::filesystem;
+
 using namespace Materials;
 
 ModelEntry::ModelEntry(const std::shared_ptr<ModelLibraryLocal>& library,
                        const std::string& baseName,
                        const std::string& modelName,
-                       const std::string& dir,
+                       const fs::path& path,
                        const std::string& modelUuid,
                        const YAML::Node& modelData)
     : _library(library)
     , _base(baseName)
     , _name(modelName)
-    , _directory(dir)
+    , _path(path)
     , _uuid(modelUuid)
     , _model(modelData)
     , _dereferenced(false)
@@ -92,10 +96,9 @@ std::string ModelLoader::getUUIDFromPath(const std::string& path)
 }
 
 std::shared_ptr<ModelEntry> ModelLoader::getModelFromPath(std::shared_ptr<ModelLibrary> library,
-                                                          const std::string& path) const
+                                                          const fs::path& path) const
 {
-    Base::FileInfo fi(path);
-    if (!fi.exists()) {
+    if (!fs::exists(path)) {
         throw ModelNotFound();
     }
 
@@ -104,7 +107,7 @@ std::shared_ptr<ModelEntry> ModelLoader::getModelFromPath(std::shared_ptr<ModelL
     std::string uuid;
     std::string name;
     try {
-        Base::ifstream str(fi);
+        std::ifstream str(path);
         yamlroot = YAML::Load(str);
         if (yamlroot["AppearanceModel"]) {
             base = "AppearanceModel";
@@ -227,7 +230,6 @@ void ModelLoader::addToTree(std::shared_ptr<ModelEntry> model,
     auto library = model->getLibrary();
     const auto& base = model->getBase();
     auto name = model->getName();
-    auto directory = model->getDirectory();
     auto uuid = model->getUUID();
 
     std::string description = yamlValue(yamlModel[base], "Description", "");
@@ -237,7 +239,7 @@ void ModelLoader::addToTree(std::shared_ptr<ModelEntry> model,
     Model::ModelType type =
         (base == "Model") ? Model::ModelType_Physical : Model::ModelType_Appearance;
 
-    Model finalModel(library, type, name, directory, uuid, description, url, doi);
+    Model finalModel(library, type, name, std::string(), uuid, description, url, doi);
 
     // Add inheritance list
     if (yamlModel[base]["Inherits"]) {
@@ -304,7 +306,7 @@ void ModelLoader::addToTree(std::shared_ptr<ModelEntry> model,
         }
     }
 
-    (*_modelMap)[uuid] = library->addModel(finalModel, directory);
+    (*_modelMap)[uuid] = library->addModel(finalModel, model->getPath());
 }
 
 void ModelLoader::loadLibrary(std::shared_ptr<ModelLibraryLocal> library)
@@ -313,25 +315,19 @@ void ModelLoader::loadLibrary(std::shared_ptr<ModelLibraryLocal> library)
         _modelEntryMap = std::make_unique<std::map<std::string, std::shared_ptr<ModelEntry>>>();
     }
 
-    QDirIterator it(QString::fromStdString(library->getDirectory()),
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        const auto pathname = it.next();
-        QFileInfo file(pathname);
-        if (file.isFile()) {
-            if (file.suffix() == QLatin1String("yml")) {
-                try {
-                    auto model =
-                        getModelFromPath(library, file.canonicalFilePath().toStdString());
-                    (*_modelEntryMap)[model->getUUID()] = model;
-                    // showYaml(model->getModel());
-                }
-                catch (InvalidModel const&) {
-                    Base::Console().log("Invalid model '{}'\n", pathname.toStdString());
-                }
-            }
+    Library::forEachEntry(library->getDirectory(), [&](const fs::directory_entry& entry) {
+        std::error_code ec;
+        if (!entry.is_regular_file(ec) || entry.path().extension() != ".yml") {
+            return;
         }
-    }
+        try {
+            auto model = getModelFromPath(library, Materials::canonicalIfExists(entry.path()));
+            (*_modelEntryMap)[model->getUUID()] = model;
+        }
+        catch (InvalidModel const&) {
+            Base::Console().log("Invalid model '{}'\n", Materials::pathToPortableUtf8(entry.path()));
+        }
+    });
 
     std::map<std::pair<std::string, std::string>, std::string> inheritances;
     for (auto it = _modelEntryMap->begin(); it != _modelEntryMap->end(); it++) {
@@ -367,9 +363,10 @@ void ModelLoader::getModelLibraries()
     bool useMatFromConfigDir = param->GetBool("UseMaterialsFromConfigDir", true);
     bool useMatFromCustomDir = param->GetBool("UseMaterialsFromCustomDir", true);
 
+    const auto& directories = App::Application::directories();
+
     if (useBuiltInMaterials) {
-        const std::string resourceDir =
-            App::Application::getResourceDir() + "/Mod/Material/Resources/Models";
+        const fs::path resourceDir = directories->getResourceDir() / "Mod/Material/Resources/Models";
         auto libData =
             std::make_shared<ModelLibraryLocal>("System", resourceDir, ":/icons/freecad.svg");
         _libraryList->push_back(libData);
@@ -379,42 +376,35 @@ void ModelLoader::getModelLibraries()
         auto moduleParam = App::GetApplication().GetParameterGroupByPath(
             "User parameter:BaseApp/Preferences/Mod/Material/Resources/Modules");
         for (auto& group : moduleParam->GetGroups()) {
-            // auto module = moduleParam->GetGroup(group->GetGroupName());
             auto moduleName = group->GetGroupName();
-            auto modelDir = group->GetASCII("ModuleModelDir", "");
+            const fs::path modelDir = Materials::pathFromUtf8(group->GetASCII("ModuleModelDir", ""));
             auto modelIcon = group->GetASCII("ModuleIcon", "");
 
-            if (!modelDir.empty()) {
-                if (QDir(QString::fromStdString(modelDir)).exists()) {
-                    auto libData = std::make_shared<ModelLibraryLocal>(moduleName, modelDir, modelIcon);
-                    _libraryList->push_back(libData);
-                }
+            if (fs::is_directory(modelDir)) {
+                auto libData = std::make_shared<ModelLibraryLocal>(moduleName, modelDir, modelIcon);
+                _libraryList->push_back(libData);
             }
         }
     }
 
     if (useMatFromConfigDir) {
-        const std::string resourceDir = App::Application::getUserAppDataDir() + "/Models";
-        if (!resourceDir.empty()) {
-            if (QDir(QString::fromStdString(resourceDir)).exists()) {
-                auto libData = std::make_shared<ModelLibraryLocal>(
-                    "User",
-                    resourceDir,
-                    ":/icons/preferences-general.svg");
-                _libraryList->push_back(libData);
-            }
+        const fs::path resourceDir = directories->getUserAppDataDir() / "Models";
+        if (fs::is_directory(resourceDir)) {
+            auto libData = std::make_shared<ModelLibraryLocal>(
+                "User",
+                resourceDir,
+                ":/icons/preferences-general.svg");
+            _libraryList->push_back(libData);
         }
     }
 
     if (useMatFromCustomDir) {
-        const std::string resourceDir = param->GetASCII("CustomMaterialsDir", "");
-        if (!resourceDir.empty()) {
-            if (QDir(QString::fromStdString(resourceDir)).exists()) {
-                auto libData = std::make_shared<ModelLibraryLocal>("Custom",
+        const fs::path resourceDir = Materials::pathFromUtf8(param->GetASCII("CustomMaterialsDir", ""));
+        if (fs::is_directory(resourceDir)) {
+            auto libData = std::make_shared<ModelLibraryLocal>("Custom",
                                                               resourceDir,
                                                               ":/icons/user.svg");
-                _libraryList->push_back(libData);
-            }
+            _libraryList->push_back(libData);
         }
     }
 }

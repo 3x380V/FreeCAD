@@ -21,8 +21,9 @@
  *                                                                         *
  **************************************************************************/
 
-
 #include <string_view>
+
+#include "PathUtils.h"
 
 #include "Exceptions.h"
 #include "MaterialFilter.h"
@@ -150,7 +151,8 @@ Py::List MaterialManagerPy::getMaterialLibraries() const
                 continue;
             }
             libTuple.setItem(0, Py::String(materialLibrary->getName()));
-            libTuple.setItem(1, Py::String(materialLibrary->getDirectoryPath()));
+            libTuple.setItem(1,
+                             Py::String(Materials::pathToPortableUtf8(materialLibrary->getDirectory())));
             libTuple.setItem(2, bytesFromIconData(materialLibrary->loadIconData()));
         }
         else
@@ -284,7 +286,6 @@ PyObject* MaterialManagerPy::save(PyObject* args, PyObject* kwds)
         PyErr_SetString(PyExc_LookupError, "Unknown library");
         return nullptr;
     }
-
 
     getMaterialManagerPtr()->saveMaterial(library,
                                           sharedMaterial,

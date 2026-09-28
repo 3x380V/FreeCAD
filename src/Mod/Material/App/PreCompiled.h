@@ -29,7 +29,6 @@
 #include <windows.h>
 #endif
 
-
 // standard
 #include <cmath>
 
@@ -42,10 +41,3 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-// Qt
-#include <QtGlobal>
-#include <QDirIterator>
-#include <QFileInfo>
-#include <QRegularExpression>
-#include <QString>

@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 #include <string>
@@ -51,7 +52,7 @@ public:
     MaterialLibrary() = default;
     MaterialLibrary(const std::string& libraryName, const std::string& icon, bool readOnly = true);
     MaterialLibrary(const std::string& libraryName,
-                    const std::string& dir,
+                    const std::filesystem::path& dir,
                     const std::string& iconPath,
                     bool readOnly = true);
     MaterialLibrary(const Library& library);
@@ -76,7 +77,7 @@ class MaterialsExport MaterialLibraryLocal: public MaterialLibrary
 public:
     MaterialLibraryLocal() = default;
     MaterialLibraryLocal(const std::string& libraryName,
-                         const std::string& dir,
+                         const std::filesystem::path& dir,
                          const std::string& iconPath,
                          bool readOnly = true);
     ~MaterialLibraryLocal() override = default;
@@ -91,9 +92,14 @@ public:
                                            bool saveAsCopy,
                                            bool saveInherited);
     bool fileExists(const std::string& path) const;
+    /// Register \a material stored at the library path \a path
     std::shared_ptr<Material> addMaterial(const std::shared_ptr<Material>& material,
                                           const std::string& path);
+    /// Register \a material stored in the file \a file
+    std::shared_ptr<Material> addMaterial(const std::shared_ptr<Material>& material,
+                                          const std::filesystem::path& file);
     std::shared_ptr<Material> getMaterialByPath(const std::string& path) const;
+    std::shared_ptr<Material> getMaterialByPath(const std::filesystem::path& file) const;
 
     bool operator==(const MaterialLibrary& library) const
     {
@@ -114,8 +120,11 @@ public:
     }
 
 protected:
-    void deleteDir(MaterialManager& manager, const std::string& path);
-    void deleteFile(MaterialManager& manager, const std::string& path);
+    void deleteDir(MaterialManager& manager, const std::filesystem::path& path);
+    void deleteFile(MaterialManager& manager, const std::filesystem::path& path);
+    std::shared_ptr<Material> addMaterialRelative(const std::shared_ptr<Material>& material,
+                                                  const std::string& relativePath);
+    std::shared_ptr<Material> findMaterial(const std::string& relativePath) const;
     void updatePaths(const std::string& oldPath, const std::string& newPath);
 
     std::string getUUIDFromPath(const std::string& path) const;

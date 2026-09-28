@@ -33,6 +33,7 @@
 #include <Mod/Material/App/ModelLibrary.h>
 #include <Mod/Material/App/Model.h>
 #include <Mod/Material/App/ModelManager.h>
+#include <Mod/Material/App/PathUtils.h>
 
 // clang-format off
 
@@ -125,9 +126,10 @@ TEST_F(TestModel, TestModelByPath)
     // Test with the file system path
     ASSERT_NO_THROW(linearElastic->getLibrary());
     ASSERT_NO_THROW(linearElastic->getLibrary()->getName());
-    ASSERT_NO_THROW(linearElastic->getLibrary()->getDirectoryPath());
+    ASSERT_NO_THROW(linearElastic->getLibrary()->getDirectory());
     EXPECT_EQ(linearElastic->getLibrary()->getName(), "System");
-    const std::string path = linearElastic->getLibrary()->getDirectoryPath() + "/Mechanical/LinearElastic.yml";
+    const std::string path = Materials::pathToPortableUtf8(linearElastic->getLibrary()->getDirectory())
+        + "/Mechanical/LinearElastic.yml";
 
     ASSERT_NO_THROW(_modelManager->getModelByPath(path));
     auto linearElastic4 = _modelManager->getModelByPath(path);
