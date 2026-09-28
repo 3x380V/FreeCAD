@@ -27,6 +27,8 @@
 
 
 #include <App/Application.h>
+#include <Base/FileInfo.h>
+#include <Base/Stream.h>
 
 #include "MaterialFilter.h"
 #include "MaterialLibrary.h"
@@ -238,7 +240,7 @@ void MaterialLibraryLocal::deleteDir(MaterialManager& manager, const std::string
 // This accepts the filesystem path as returned from getLocalPath
 void MaterialLibraryLocal::deleteFile(MaterialManager& manager, const std::string& path)
 {
-    if (QFile::remove(QString::fromStdString(path))) {
+    if (Base::FileInfo(path).deleteFile()) {
         // Remove from the map
         const std::string rPath = getRelativePath(path);
         try {
@@ -281,31 +283,25 @@ MaterialLibraryLocal::saveMaterial(const std::shared_ptr<Material>& material,
                                    bool saveAsCopy,
                                    bool saveInherited)
 {
-    QFile file(QString::fromStdString(getLocalPath(path)));
+    const Base::FileInfo info(getLocalPath(path));
 
-    QFileInfo info(file);
-    QDir fileDir(info.path());
+    const QString dirPath = QString::fromStdString(info.dirPath());
+    QDir fileDir(dirPath);
     if (!fileDir.exists()) {
-        if (!fileDir.mkpath(info.path())) {
-            Base::Console().error("Unable to create directory path '{}'\n",
-                                  info.path().toStdString());
+        if (!fileDir.mkpath(dirPath)) {
+            Base::Console().error("Unable to create directory path '{}'\n", info.dirPath());
         }
     }
 
-    if (info.exists()) {
-        if (!overwrite) {
-            Base::Console().error("File already exists '{}'\n", info.path().toStdString());
-            throw MaterialExists();
-        }
+    if (info.exists() && !overwrite) {
+        Base::Console().error("File already exists '{}'\n", info.filePath());
+        throw MaterialExists();
     }
 
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream stream(&file);
-        stream.setGenerateByteOrderMark(true);
-
+    Base::ofstream stream(info);
+    if (stream) {
         // Write the contents
-        material->setName(
-            info.fileName().remove(QLatin1String(".FCMat"), Qt::CaseInsensitive).toStdString());
+        material->setName(info.fileNamePure());
         material->setLibrary(getptr());
         material->setDirectory(getRelativePath(path));
         material->save(stream, overwrite, saveAsCopy, saveInherited);

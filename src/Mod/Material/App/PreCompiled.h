@@ -47,7 +47,5 @@
 #include <QtGlobal>
 #include <QDirIterator>
 #include <QFileInfo>
-#include <QIODevice>
 #include <QRegularExpression>
 #include <QString>
-#include <QTextStream>
