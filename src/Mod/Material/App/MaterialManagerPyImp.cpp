@@ -26,6 +26,7 @@
 #include "MaterialFilter.h"
 #include "MaterialFilterPy.h"
 #include "MaterialManager.h"
+#include "PyVariants.h"
 #include "MaterialManagerPy.h"
 #include "MaterialPy.h"
 #include "Materials.h"
@@ -148,9 +149,7 @@ Py::List MaterialManagerPy::getMaterialLibraries() const
             }
             libTuple.setItem(0, Py::String(materialLibrary->getName()));
             libTuple.setItem(1, Py::String(materialLibrary->getDirectoryPath()));
-            libTuple.setItem(2,
-                             Py::Bytes(Py::Bytes(materialLibrary->getIcon().data(),
-                                                 materialLibrary->getIcon().size())));
+            libTuple.setItem(2, bytesFromIconData(materialLibrary->loadIconData()));
         }
         else
         {

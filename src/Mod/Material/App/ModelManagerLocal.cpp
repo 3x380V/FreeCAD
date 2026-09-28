@@ -128,7 +128,7 @@ void ModelManagerLocal::changeIcon(const std::string& libraryName, const std::st
 {
     for (auto& library : *_libraryList) {
         if (library->isName(libraryName)) {
-            library->setIcon(icon);
+            library->setIconPath(icon);
             return;
         }
     }

@@ -72,7 +72,7 @@ public:
                        const std::string& iconPath,
                        bool readOnly = true);
     void renameLibrary(const std::string& libraryName, const std::string& newName);
-    void changeIcon(const std::string& libraryName, const QByteArray& icon);
+    void changeIcon(const std::string& libraryName, const std::string& iconPath);
     void removeLibrary(const std::string& libraryName);
     std::shared_ptr<std::vector<LibraryObject>>
     libraryMaterials(const std::string& libraryName);

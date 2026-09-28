@@ -273,12 +273,11 @@ std::shared_ptr<MaterialLibrary> MaterialManager::getLibrary(const std::string& 
 }
 
 void MaterialManager::createLibrary([[maybe_unused]] const std::string& libraryName,
-                                    [[maybe_unused]] const std::string& iconPath,
+                                    [[maybe_unused]] const IconData& icon,
                                     [[maybe_unused]] bool readOnly)
 {
 #if defined(BUILD_MATERIAL_EXTERNAL)
     if (_useExternal) {
-        auto icon = Materials::Library::getIcon(iconPath);
         _externalManager->createLibrary(libraryName, icon, readOnly);
         return;
     }
@@ -314,8 +313,7 @@ void MaterialManager::renameLibrary(const std::string& libraryName, const std::s
 
 void MaterialManager::changeIcon(const std::string& libraryName, const std::string& iconPath)
 {
-    auto icon = Materials::Library::getIcon(iconPath);
-    _localManager->changeIcon(libraryName, icon);
+    _localManager->changeIcon(libraryName, iconPath);
 }
 
 void MaterialManager::removeLibrary(const std::string& libraryName)
@@ -616,12 +614,11 @@ void MaterialManager::dereference(std::shared_ptr<Material> material) const
 }
 
 #if defined(BUILD_MATERIAL_EXTERNAL)
-void MaterialManager::migrateToExternal(const std::shared_ptr<Materials::MaterialLibrary>& library)
+void MaterialManager::migrateToExternal(const std::shared_ptr<Materials::MaterialLibrary>& library,
+                                        const IconData& icon)
 {
     try {
-        _externalManager->createLibrary(library->getName(),
-                                        library->getIcon(),
-                                        library->isReadOnly());
+        _externalManager->createLibrary(library->getName(), icon, library->isReadOnly());
     }
     catch (const CreationError&) {
     }

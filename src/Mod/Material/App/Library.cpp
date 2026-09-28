@@ -21,17 +21,22 @@
  *                                                                         *
  **************************************************************************/
 
+#include <cstddef>
+#include <ios>
+#include <iterator>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <App/Application.h>
+#include <Base/FileInfo.h>
+#include <Base/Stream.h>
 
 #include "Exceptions.h"
 #include "Library.h"
 
 #include <QDir>
-#include <QFile>
 
 using namespace Materials;
 
@@ -43,12 +48,12 @@ Library::Library(const std::string& libraryName, const std::string& iconPath, bo
     , _caseSensitive(true)
     , _local(false)
 {
-    setIcon(iconPath);
+    setIconPath(iconPath);
 }
 
-Library::Library(const std::string& libraryName, const QByteArray& icon, bool readOnly)
+Library::Library(const std::string& libraryName, IconData icon, bool readOnly)
     : _name(libraryName)
-    , _icon(icon)
+    , _iconData(std::move(icon))
     , _readOnly(readOnly)
     , _caseSensitive(true)
     , _local(false)
@@ -63,26 +68,38 @@ Library::Library(const std::string& libraryName,
     , _readOnly(readOnly)
     , _local(false)
 {
-    setIcon(iconPath);
+    setIconPath(iconPath);
     setCaseSensitivity();
 }
 
-QByteArray Library::getIcon(const std::string& iconPath)
+void Library::setIconPath(std::string iconPath)
 {
-    QFile file(QString::fromStdString(iconPath));
-    if (!file.open(QIODevice::ReadOnly)) {
-        Base::Console().log("Failed to open icon file '{}'\n", iconPath);
-        return QByteArray();  // Return an empty QByteArray if file opening fails
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-    return data;
+    _iconPath = std::move(iconPath);
+    _iconData.clear();
 }
 
-void Library::setIcon(const std::string& iconPath)
+void Library::setIconData(IconData icon)
 {
-    _icon = getIcon(iconPath);
+    _iconData = std::move(icon);
+    _iconPath.clear();
+}
+
+IconData Library::loadIconData() const
+{
+    if (!_iconData.empty() || _iconPath.empty()) {
+        return _iconData;
+    }
+
+    const Base::FileInfo info(_iconPath);
+    if (!info.isFile()) {
+        // Qt resource paths and missing files
+        return {};
+    }
+
+    Base::ifstream file(info, std::ios::in | std::ios::binary);
+    const std::string bytes((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    const auto view = std::as_bytes(std::span(bytes));
+    return IconData(view.begin(), view.end());
 }
 
 bool Library::isLocal() const
@@ -146,7 +163,7 @@ void Library::validate(const Library& remote) const
     if (getName() != remote.getName()) {
         throw InvalidLibrary("Library names don't match");
     }
-    if (getIcon() != remote.getIcon()) {
+    if (hasIconData() && remote.hasIconData() && getIconData() != remote.getIconData()) {
         throw InvalidLibrary("Library icons don't match");
     }
 

@@ -220,7 +220,7 @@ TEST_F(TestMaterial, TestAddAppearanceModel)
 TEST_F(TestMaterial, TestValidateAppearanceModels)
 {
     // The local library and the matching remote one
-    const Materials::Library library {"Library", QByteArray(), true};
+    const Materials::Library library {"Library", Materials::IconData(), true};
     auto localLibrary = std::make_shared<Materials::MaterialLibrary>(library);
     auto remoteLibrary = std::make_shared<Materials::MaterialLibrary>(library);
 

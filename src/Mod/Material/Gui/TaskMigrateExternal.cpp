@@ -27,6 +27,7 @@
 #include <Base/Console.h>
 #include <Gui/WaitCursor.h>
 
+#include "LibraryIcon.h"
 #include "TaskMigrateExternal.h"
 #include "MaterialMetaTypes.h"
 #include "ui_TaskMigrateExternal.h"
@@ -80,7 +81,7 @@ void DlgMigrateExternal::migrate()
                 auto library =
                     item->data(Qt::UserRole).value<std::shared_ptr<Materials::ModelLibrary>>();
                 statusUpdate(tr("  Library: ") + QString::fromStdString(library->getName()));
-                Materials::ModelManager::getManager().migrateToExternal(library);
+                Materials::ModelManager::getManager().migrateToExternal(library, libraryIconData(*library));
             }
         }
         statusUpdate(tr("done"));
@@ -104,7 +105,7 @@ void DlgMigrateExternal::migrate()
                 auto library =
                     item->data(Qt::UserRole).value<std::shared_ptr<Materials::MaterialLibrary>>();
                 statusUpdate(tr("  Library: ") + QString::fromStdString(library->getName()));
-                Materials::MaterialManager::getManager().migrateToExternal(library);
+                Materials::MaterialManager::getManager().migrateToExternal(library, libraryIconData(*library));
             }
         }
         statusUpdate(tr("done"));

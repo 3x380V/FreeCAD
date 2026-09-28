@@ -26,7 +26,11 @@
 #include <Base/QuantityPy.h>
 #include <CXX/Objects.hxx>
 
+#include <span>
+#include <string>
+
 #include "MaterialLibrary.h"
+#include "PyVariants.h"
 
 #include "MaterialLibraryPy.h"
 
@@ -72,20 +76,29 @@ void MaterialLibraryPy::setName(const Py::String value)
 
 Py::Object MaterialLibraryPy::getIcon() const
 {
-    auto icon = getMaterialLibraryPtr()->getIcon();
-    return Py::Bytes(icon.data(), icon.size());
+    return bytesFromIconData(getMaterialLibraryPtr()->loadIconData());
 }
 
 void MaterialLibraryPy::setIcon(const Py::Object value)
 {
     if (value.isNone()) {
-        getMaterialLibraryPtr()->setIcon(QByteArray());
+        getMaterialLibraryPtr()->setIconData({});
     }
     else {
-        auto pyBytes = Py::Bytes(value);
-        getMaterialLibraryPtr()->setIcon(
-            QByteArray(pyBytes.as_std_string().data(), pyBytes.size()));
+        const std::string bytes = Py::Bytes(value).as_std_string();
+        const auto view = std::as_bytes(std::span(bytes));
+        getMaterialLibraryPtr()->setIconData(Materials::IconData(view.begin(), view.end()));
     }
+}
+
+Py::String MaterialLibraryPy::getIconPath() const
+{
+    return {getMaterialLibraryPtr()->getIconPath()};
+}
+
+void MaterialLibraryPy::setIconPath(const Py::String value)
+{
+    getMaterialLibraryPtr()->setIconPath(value.as_std_string());
 }
 
 Py::String MaterialLibraryPy::getDirectory() const

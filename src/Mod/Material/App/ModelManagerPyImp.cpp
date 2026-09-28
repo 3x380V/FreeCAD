@@ -25,6 +25,7 @@
 #include "Model.h"
 #include "ModelLibrary.h"
 #include "ModelManager.h"
+#include "PyVariants.h"
 #include "ModelManagerPy.h"
 #include "ModelPy.h"
 
@@ -124,7 +125,7 @@ Py::List ModelManagerPy::getModelLibraries() const
         Py::Tuple libTuple(4);
         libTuple.setItem(0, Py::String(lib->getName()));
         libTuple.setItem(1, Py::String(lib->getDirectoryPath()));
-        libTuple.setItem(2, Py::Bytes(lib->getIcon().data(), lib->getIcon().size()));
+        libTuple.setItem(2, bytesFromIconData(lib->loadIconData()));
         libTuple.setItem(3, Py::Boolean(lib->isReadOnly()));
 
         list.append(libTuple);
@@ -143,7 +144,7 @@ Py::List ModelManagerPy::getLocalModelLibraries() const
         Py::Tuple libTuple(4);
         libTuple.setItem(0, Py::String(lib->getName()));
         libTuple.setItem(1, Py::String(lib->getDirectoryPath()));
-        libTuple.setItem(2, Py::Bytes(lib->getIcon().data(), lib->getIcon().size()));
+        libTuple.setItem(2, bytesFromIconData(lib->loadIconData()));
         libTuple.setItem(3, Py::Boolean(lib->isReadOnly()));
 
         list.append(libTuple);
