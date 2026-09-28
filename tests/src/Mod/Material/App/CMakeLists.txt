@@ -10,10 +10,6 @@ add_executable(Material_tests_run
         TestModelProperties.cpp
 )
 
-target_include_directories(Material_tests_run SYSTEM PUBLIC
-        ${QtCore_INCLUDE_DIRS}
-)
-
 set(MaterialTestData_Files
         Materials/TestAcrylicLegacy.FCMat
         Materials/TestAluminumAppearance.FCMat
