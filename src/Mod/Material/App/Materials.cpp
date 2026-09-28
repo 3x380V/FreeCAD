@@ -28,10 +28,10 @@
 
 #include <QDir>
 #include <QLocale>
-#include <QUuid>
 
 #include <App/Application.h>
 #include <Base/StringUtils.h>
+#include <Base/Uuid.h>
 
 #include "Materials.h"
 
@@ -1516,7 +1516,7 @@ void Material::saveAppearanceModels(QTextStream& stream, bool saveInherited) con
 
 void Material::newUuid()
 {
-    _uuid = QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString();
+    _uuid = Base::Uuid::createUuid();
 }
 
 std::string Material::getModelByName(const std::string& name) const
