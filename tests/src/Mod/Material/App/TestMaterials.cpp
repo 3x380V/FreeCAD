@@ -24,7 +24,6 @@
 
 #include <string>
 
-#include <QLocale>
 
 #include <App/Application.h>
 #include <Base/Interpreter.h>
@@ -336,9 +335,8 @@ TEST_F(TestMaterial, TestCalculiXSteel)
     EXPECT_FALSE(properties1["SpecularColor"]->isNull());
     EXPECT_FALSE(properties1["Transparency"]->isNull());
 
-    QLocale locale;
     EXPECT_EQ(properties["Density"]->getString(), parseQuantity("7900.00 kg/m^3"));
-    EXPECT_EQ(properties["PoissonRatio"]->getString(), locale.toString(0.3).toStdString());
+    EXPECT_EQ(properties["PoissonRatio"]->getString(), parseQuantity("0.3"));
     EXPECT_EQ(properties["YoungsModulus"]->getString(), parseQuantity("210.00 GPa"));
     EXPECT_EQ(properties["SpecificHeat"]->getString(), parseQuantity("590.00 J/kg/K"));
     EXPECT_EQ(properties["ThermalConductivity"]->getString(), parseQuantity("43.00 W/m/K"));
@@ -346,7 +344,7 @@ TEST_F(TestMaterial, TestCalculiXSteel)
     EXPECT_EQ(properties1["AmbientColor"]->getString(), "(0.0020, 0.0020, 0.0020, 1.0)");
     EXPECT_EQ(properties1["DiffuseColor"]->getString(), "(0.0000, 0.0000, 0.0000, 1.0)");
     EXPECT_EQ(properties1["EmissiveColor"]->getString(), "(0.0000, 0.0000, 0.0000, 1.0)");
-    EXPECT_EQ(properties1["Shininess"]->getString(), locale.toString(0.06).toStdString());
+    EXPECT_EQ(properties1["Shininess"]->getString(), parseQuantity("0.06"));
     EXPECT_EQ(properties1["SpecularColor"]->getString(), "(0.9800, 0.9800, 0.9800, 1.0)");
     EXPECT_EQ(properties1["Transparency"]->getString(), "0");
 
