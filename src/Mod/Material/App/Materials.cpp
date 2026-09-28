@@ -27,7 +27,6 @@
 #include <utility>
 
 #include <QDir>
-#include <QLocale>
 
 #include <App/Application.h>
 #include <Base/StringUtils.h>
@@ -57,6 +56,19 @@ static QTextStream& operator<<(QTextStream& stream, const std::string& text)
 /* TRANSLATOR Material::Materials */
 
 TYPESYSTEM_SOURCE(Materials::MaterialProperty, Materials::ModelProperty)
+
+namespace
+{
+
+// Use quantity for real numbers formatting to get consistent results.
+std::string userNumberString(double value)
+{
+    Base::Quantity number(value);
+    number.setFormat(MaterialValue::getQuantityFormat());
+    return number.getUserString();
+}
+
+}  // namespace
 
 MaterialProperty::MaterialProperty()
 {
@@ -142,8 +154,7 @@ std::string MaterialProperty::getString() const
         if (value.isNull()) {
             return {};
         }
-        // the value is shown to the user, so in their locale
-        return QLocale().toString(value.toDouble(), 'g', MaterialValue::PRECISION).toStdString();
+        return userNumberString(value.toDouble());
     }
     return getValue().toString();
 }
@@ -1139,10 +1150,7 @@ Material::getValueString(const std::map<std::string, std::shared_ptr<MaterialPro
             if (value.isNull()) {
                 return {};
             }
-            // the value is shown to the user, so in their locale
-            return QLocale()
-                .toString(value.toDouble(), 'g', MaterialValue::PRECISION)
-                .toStdString();
+            return userNumberString(value.toDouble());
         }
         return property->getValue().toString();
     }
