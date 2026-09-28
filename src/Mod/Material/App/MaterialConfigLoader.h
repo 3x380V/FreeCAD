@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 #include <map>
@@ -44,9 +45,10 @@ public:
     virtual ~MaterialConfigLoader() = default;
 
 
-    static bool isConfigStyle(const std::string& path);
+    static bool isConfigStyle(const std::filesystem::path& path);
     static std::shared_ptr<Material>
-    getMaterialFromPath(const std::shared_ptr<MaterialLibraryLocal>& library, const std::string& path);
+    getMaterialFromPath(const std::shared_ptr<MaterialLibraryLocal>& library,
+                        const std::filesystem::path& path);
 
 private:
     static std::string value(const std::map<std::string, std::string>& fcmat,
@@ -100,7 +102,7 @@ private:
         return Base::StringUtils::lowercaseAscii(value).find("texture") != std::string::npos;
     }
 
-    static bool readFile(const std::string& path, std::map<std::string, std::string>& map);
+    static bool readFile(const std::filesystem::path& path, std::map<std::string, std::string>& map);
     static void splitTexture(const std::string& value, std::string* texture, std::string* remain);
     static void
     splitTextureObject(const std::string& value,
@@ -108,7 +110,7 @@ private:
                        std::string* remain,
                        std::string* object);
 
-    static std::string getAuthorAndLicense(const std::string& path);
+    static std::string getAuthorAndLicense(const std::filesystem::path& path);
     static void addMechanical(const std::map<std::string, std::string>& fcmat,
                               const std::shared_ptr<Material>& finalModel);
     static void addFluid(const std::map<std::string, std::string>& fcmat,

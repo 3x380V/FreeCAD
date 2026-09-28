@@ -23,13 +23,13 @@
 
 #pragma once
 
+#include <filesystem>
 #include <list>
 #include <memory>
 #include <mutex>
 
 #include <Base/Parameter.h>
 #include <Mod/Material/MaterialGlobal.h>
-
 
 #include "Exceptions.h"
 #include "FolderTree.h"
@@ -61,7 +61,7 @@ public:
                        const IconData& icon,
                        bool readOnly = true);
     void createLocalLibrary(const std::string& libraryName,
-                       const std::string& directory,
+                       const std::filesystem::path& directory,
                        const std::string& icon,
                        bool readOnly = true);
     void renameLibrary(const std::string& libraryName, const std::string& newName);

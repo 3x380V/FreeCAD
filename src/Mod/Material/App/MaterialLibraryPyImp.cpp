@@ -22,6 +22,7 @@
  **************************************************************************/
 
 
+#include "PathUtils.h"
 #include <Base/Quantity.h>
 #include <Base/QuantityPy.h>
 #include <CXX/Objects.hxx>
@@ -103,13 +104,12 @@ void MaterialLibraryPy::setIconPath(const Py::String value)
 
 Py::String MaterialLibraryPy::getDirectory() const
 {
-    auto path = getMaterialLibraryPtr()->getDirectory();
-    return {path};
+    return {Materials::pathToPortableUtf8(getMaterialLibraryPtr()->getDirectory())};
 }
 
 void MaterialLibraryPy::setDirectory(const Py::String value)
 {
-    getMaterialLibraryPtr()->setDirectory(value);
+    getMaterialLibraryPtr()->setDirectory(Materials::pathFromUtf8(value.as_std_string()));
 }
 
 Py::Boolean MaterialLibraryPy::getReadOnly() const
