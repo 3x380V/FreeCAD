@@ -31,8 +31,6 @@
 #include "Model.h"
 #include "ModelLibrary.h"
 
-#include <QDir>
-#include <QString>
 
 using namespace Materials;
 
@@ -186,12 +184,6 @@ void Model::setFilename(std::string filename)
     _filename = std::move(filename);
 }
 
-std::string Model::getFilePath() const
-{
-    return QDir(QString::fromStdString(_directory + "/" + _filename))
-        .absolutePath()
-        .toStdString();
-}
 
 ModelProperty& Model::operator[](const std::string& key)
 {

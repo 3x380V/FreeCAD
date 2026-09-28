@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 #include <string>
@@ -48,7 +49,7 @@ public:
     ModelLibrary();
     ModelLibrary(const Library& library);
     ModelLibrary(const std::string& libraryName,
-                 const std::string& dir,
+                 const std::filesystem::path& dir,
                  const std::string& iconPath,
                  bool readOnly = true);
     ModelLibrary(const ModelLibrary& other) = delete;
@@ -72,7 +73,7 @@ public:
     ModelLibraryLocal();
     ModelLibraryLocal(const Library& other);
     ModelLibraryLocal(const std::string& libraryName,
-                      const std::string& dir,
+                      const std::filesystem::path& dir,
                       const std::string& iconPath,
                       bool readOnly = true);
     ModelLibraryLocal(const ModelLibraryLocal& other) = delete;
@@ -87,10 +88,12 @@ public:
         return !operator==(library);
     }
     std::shared_ptr<Model> getModelByPath(const std::string& path) const;
+    std::shared_ptr<Model> getModelByPath(const std::filesystem::path& file) const;
 
-    std::shared_ptr<Model> addModel(const Model& model, const std::string& path);
+    std::shared_ptr<Model> addModel(const Model& model, const std::filesystem::path& file);
 
 private:
+    std::shared_ptr<Model> findModel(const std::string& relativePath) const;
 
     std::unique_ptr<std::map<std::string, std::shared_ptr<Model>>> _modelPathMap;
 };
