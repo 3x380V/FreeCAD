@@ -172,7 +172,7 @@ void MaterialManagerLocal::renameLibrary(const std::string& libraryName, const s
     throw LibraryNotFound();
 }
 
-void MaterialManagerLocal::changeIcon(const std::string& libraryName, const QByteArray& icon)
+void MaterialManagerLocal::changeIcon(const std::string& libraryName, const std::string& iconPath)
 {
     for (auto& library : *_libraryList) {
         if (library->isLocal() && library->isName(libraryName)) {
@@ -181,7 +181,7 @@ void MaterialManagerLocal::changeIcon(const std::string& libraryName, const QByt
             if (!materialLibrary) {
                 throw LibraryNotFound();
             }
-            materialLibrary->setIcon(icon);
+            materialLibrary->setIconPath(iconPath);
             return;
         }
     }

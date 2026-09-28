@@ -52,6 +52,7 @@
 
 #include "MaterialDelegate.h"
 #include "MaterialSave.h"
+#include "LibraryIcon.h"
 #include "MaterialsEditor.h"
 #include "MaterialMetaTypes.h"
 #include "ValueVariant.h"
@@ -804,19 +805,7 @@ void MaterialsEditor::createAppearanceTree()
 
 QIcon MaterialsEditor::getIcon(const std::shared_ptr<Materials::Library>& library)
 {
-    // Load from the QByteArray if available
-    QIcon icon;
-    if (library->hasIcon()) {
-        QImage image;
-        if (!image.loadFromData(library->getIcon())) {
-            Base::Console().log("Unable to load icon image for library '{}'\n",
-                                library->getName());
-            return QIcon();
-        }
-        icon = QIcon(QPixmap::fromImage(image));
-    }
-
-    return icon;
+    return libraryIcon(*library);
 }
 
 QIcon MaterialsEditor::getIcon(const std::shared_ptr<Materials::ModelLibrary>& library)

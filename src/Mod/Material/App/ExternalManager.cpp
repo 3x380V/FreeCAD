@@ -22,6 +22,7 @@
  **************************************************************************/
 
 #include <Python.h>
+#include <span>
 
 #include <App/Application.h>
 #include <Base/Console.h>
@@ -39,6 +40,7 @@
 #include "ModelPy.h"
 #include "MaterialFilterPy.h"
 #include "MaterialFilterOptionsPy.h"
+#include "PyVariants.h"
 
 
 using namespace Materials;
@@ -187,9 +189,11 @@ ExternalManager::libraryFromObject(const Py::Object& entry)
     if (!pyName.isNone()) {
         libraryName = pyName.as_string();
     }
-    QByteArray icon;
+    IconData icon;
     if (!pyIcon.isNone()) {
-        icon = QByteArray(pyIcon.as_std_string().data(), pyIcon.size());
+        const std::string bytes = pyIcon.as_std_string();
+        const auto view = std::as_bytes(std::span(bytes));
+        icon.assign(view.begin(), view.end());
     }
 
     bool readOnly = pyReadOnly.as_bool();
@@ -345,7 +349,7 @@ std::shared_ptr<Library> ExternalManager::getLibrary(const std::string& name)
     }
 }
 
-void ExternalManager::createLibrary(const std::string& libraryName, const QByteArray& icon, bool readOnly)
+void ExternalManager::createLibrary(const std::string& libraryName, const IconData& icon, bool readOnly)
 {
     connect();
 
@@ -355,7 +359,7 @@ void ExternalManager::createLibrary(const std::string& libraryName, const QByteA
             Py::Callable libraries(_managerObject.getAttr("createLibrary"));
             Py::Tuple args(3);
             args.setItem(0, Py::String(libraryName));
-            args.setItem(1, Py::Bytes(icon.data(), icon.size()));
+            args.setItem(1, bytesFromIconData(icon));
             args.setItem(2, Py::Boolean(readOnly));
             libraries.apply(args);  // No return expected
         }
@@ -394,7 +398,7 @@ void ExternalManager::renameLibrary(const std::string& libraryName, const std::s
     }
 }
 
-void ExternalManager::changeIcon(const std::string& libraryName, const QByteArray& icon)
+void ExternalManager::changeIcon(const std::string& libraryName, const IconData& icon)
 {
     connect();
 
@@ -404,7 +408,7 @@ void ExternalManager::changeIcon(const std::string& libraryName, const QByteArra
             Py::Callable libraries(_managerObject.getAttr("changeIcon"));
             Py::Tuple args(2);
             args.setItem(0, Py::String(libraryName));
-            args.setItem(1, Py::Bytes(icon.data(), icon.size()));
+            args.setItem(1, bytesFromIconData(icon));
             libraries.apply(args);  // No return expected
         }
         else {

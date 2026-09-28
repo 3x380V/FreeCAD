@@ -26,6 +26,7 @@
 #include "ModelLibrary.h"
 #include "ModelPropertyPy.h"
 #include "ModelPy.h"
+#include "PyVariants.h"
 #include "ModelUuids.h"
 
 #include "ModelPy.cpp"
@@ -71,7 +72,7 @@ Py::String ModelPy::getLibraryRoot() const
 Py::Object ModelPy::getLibraryIcon() const
 {
     auto library = getModelPtr()->getLibrary();
-    return Py::Bytes(library->getIcon().data(), library->getIcon().size());
+    return bytesFromIconData(library->loadIconData());
 }
 
 Py::String ModelPy::getName() const

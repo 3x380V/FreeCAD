@@ -105,7 +105,7 @@ std::shared_ptr<ModelLibrary> ModelManagerExternal::getLibrary(const std::string
 }
 
 void ModelManagerExternal::createLibrary(const std::string& libraryName,
-                                         const QByteArray& icon,
+                                         const IconData& icon,
                                          bool readOnly)
 {
     ExternalManager::getManager()->createLibrary(libraryName, icon, readOnly);
