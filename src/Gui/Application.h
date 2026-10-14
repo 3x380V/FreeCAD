@@ -279,6 +279,8 @@ public:
     static void initTypes();
     static void initOpenInventor();
     static void runInitGuiScript();
+    /// create the QApplication and show the splash, false if another instance took over
+    static bool startApplication();
     static void runApplication();
     void tryClose(QCloseEvent* e);
     //@}

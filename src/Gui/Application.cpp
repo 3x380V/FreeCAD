@@ -2615,7 +2615,13 @@ void runEventLoop(GUISingleApplication& mainApp)
 }
 }  // namespace
 
-void Application::runApplication()
+namespace
+{
+// created by startApplication() as soon as possible, so the splash can be shown early
+std::unique_ptr<GUISingleApplication> qtApp;  // NOLINT
+}  // namespace
+
+bool Application::startApplication()
 {
     StartupProcess::setupApplication();
 
@@ -2647,8 +2653,9 @@ void Application::runApplication()
     // A new QApplication
     Base::Console().log("Init: Creating Gui::Application and QApplication\n");
 
-    int argc = App::Application::GetARGC();
-    GUISingleApplication mainApp(argc, App::Application::GetARGV());
+    // QApplication keeps a reference to argc, so it has to outlive it
+    static int argc = App::Application::GetARGC();
+    qtApp = std::make_unique<GUISingleApplication>(argc, App::Application::GetARGV());
 
 #if (COIN_MAJOR_VERSION * 100 + COIN_MINOR_VERSION * 10 + COIN_MICRO_VERSION < 406) \
     && (defined(FC_OS_LINUX) || defined(FC_OS_BSD))
@@ -2665,8 +2672,9 @@ void Application::runApplication()
     setlocale(LC_NUMERIC, "C");
 
     // check if a single or multiple instances can run
-    if (onlySingleInstance(mainApp)) {
-        return;
+    if (onlySingleInstance(*qtApp)) {
+        qtApp.reset();
+        return false;
     }
 
     setAppNameAndIcon();
@@ -2678,8 +2686,20 @@ void Application::runApplication()
     // contains translated text, the language.
     activateLanguage();
     showSplash();
+
+    return true;
+}
+
+void Application::runApplication()
+{
+    // destroy the QApplication only once everything else is gone
+    auto qtAppGuard = qScopeGuard([]() { qtApp.reset(); });
     // make sure the splash does not outlive a failed startup
     auto splashGuard = qScopeGuard([]() { hideSplash(nullptr); });
+
+    if (!qtApp && !startApplication()) {
+        return;
+    }
 
     Application app(true);
     MainWindow mw;
@@ -2696,10 +2716,10 @@ void Application::runApplication()
     SoDebugError::setHandlerCallback(messageHandlerCoin, 0);
 #endif
 
-    StartupPostProcess postProcess(&mw, app, &mainApp);
+    StartupPostProcess postProcess(&mw, app, qtApp.get());
     postProcess.execute();
 
-    init3DMouse(&mw, &mainApp);
+    init3DMouse(&mw, qtApp.get());
 
     Instance->d->startingUp = false;
 
@@ -2713,7 +2733,7 @@ void Application::runApplication()
     // https://forum.freecad.org/viewtopic.php?f=10&t=21665
     Gui::getMainWindow()->setProperty("eventLoop", true);
 
-    runEventLoop(mainApp);
+    runEventLoop(*qtApp);
 
     Base::Console().log("Finish: Event loop left\n");
 }
