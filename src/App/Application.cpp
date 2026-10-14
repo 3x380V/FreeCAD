@@ -2109,6 +2109,12 @@ void initExceptions()
 
 void Application::init(int argc, char ** argv)
 {
+    initConfiguration(argc, argv);
+    initModules();
+}
+
+void Application::initConfiguration(int argc, char ** argv)
+{
     try {
         // Establish the initial Base snapshot before application or GUI preferences can override it.
         Base::publishNumericLocaleContext(
@@ -2127,6 +2133,30 @@ void Application::init(int argc, char ** argv)
         initCrashReporter();
 
         initApplication();
+    }
+    catch (...) {
+        // force the log to flush
+        destructObserver();
+        throw;
+    }
+}
+
+void Application::initModules()
+{
+    try {
+        // starting the init script
+        Base::Console().log("Run App init script\n");
+        try {
+            Base::Interpreter().runString(Base::ScriptFactory().ProduceScript("CMakeVariables"));
+            Base::Interpreter().runString(Base::ScriptFactory().ProduceScript("FreeCADInit"));
+        }
+        catch (const Base::Exception& e) {
+            e.reportException();
+        }
+
+        // seed randomizer
+        srand(time(nullptr));
+
         initExceptions();
     }
     catch (...) {
@@ -3048,19 +3078,6 @@ void Application::initApplication()
 #if defined (_DEBUG)
     Base::Console().log("Application is built with debug information\n");
 #endif
-
-    // starting the init script
-    Base::Console().log("Run App init script\n");
-    try {
-        Base::Interpreter().runString(Base::ScriptFactory().ProduceScript("CMakeVariables"));
-        Base::Interpreter().runString(Base::ScriptFactory().ProduceScript("FreeCADInit"));
-    }
-    catch (const Base::Exception& e) {
-        e.reportException();
-    }
-
-    // seed randomizer
-    srand(time(nullptr));
 }
 
 std::list<std::string> Application::getCmdLineFiles()
