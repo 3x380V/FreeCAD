@@ -535,12 +535,7 @@ Application::Application(bool GUIenabled)
         App::GetApplication().signalShowHidden.connect(
             std::bind(&Gui::Application::slotShowHidden, this, sp::_1));
         // NOLINTEND
-        // install the last active language
-        ParameterGrp::handle hPGrp = App::GetApplication().GetUserParameter().GetGroup("BaseApp");
-        hPGrp = hPGrp->GetGroup("Preferences")->GetGroup("General");
-        QString lang = QLocale::languageToString(QLocale().language());
-        Translator::instance()->activateLanguage(
-            hPGrp->GetASCII("Language", (const char*)lang.toLatin1()).c_str());
+        activateLanguage();
         GetWidgetFactorySupplier();
 
         // Coin3d disables VBO support for some (typically very old) drivers and hardware.
@@ -2679,6 +2674,13 @@ void Application::runApplication()
     StartupProcess process;
     process.execute();
 
+    // Show the splash as soon as possible. It needs the image search paths and, as it
+    // contains translated text, the language.
+    activateLanguage();
+    showSplash();
+    // make sure the splash does not outlive a failed startup
+    auto splashGuard = qScopeGuard([]() { hideSplash(nullptr); });
+
     Application app(true);
     MainWindow mw;
     mw.setProperty("QuitOnClosed", true);
@@ -2760,6 +2762,23 @@ bool Application::hiddenMainWindow()
     auto it = cfg.find("StartHidden");
 
     return it != cfg.end();
+}
+
+void Application::activateLanguage()
+{
+    // install the last active language, but only once as it may be done before the splash
+    static bool activated = false;
+    if (activated) {
+        return;
+    }
+    activated = true;
+
+    ParameterGrp::handle hPGrp = App::GetApplication().GetUserParameter().GetGroup("BaseApp");
+    hPGrp = hPGrp->GetGroup("Preferences")->GetGroup("General");
+    QString lang = QLocale::languageToString(QLocale().language());
+    Translator::instance()->activateLanguage(
+        hPGrp->GetASCII("Language", (const char*)lang.toLatin1()).c_str()
+    );
 }
 
 void Application::showSplash()
