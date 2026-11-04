@@ -73,12 +73,6 @@ target_include_directories(
     ${CMAKE_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/src
     ${CMAKE_SOURCE_DIR}/src
-)
-
-# PUBLIC because Expression.tab.h is included transitively via ExpressionParser.h
-target_include_directories(
-    FreeCADApp
-    PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
